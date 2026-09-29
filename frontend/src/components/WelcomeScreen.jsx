@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EASE_OUT_EXPO } from '../utils/motion';
 
 export default function WelcomeScreen({ onComplete }) {
-  const [step, setStep] = useState(1);
+  const [stage, setStage] = useState(1); // 1: ECG drawing & pulsing, 2: Wordmark resolve, 3: Lift away
 
   useEffect(() => {
-    // Sequence timing: total ~1.8 seconds
-    const timer1 = setTimeout(() => setStep(2), 350);  // Step 2: Draw ECG line
-    const timer2 = setTimeout(() => setStep(3), 900);  // Step 3: Pulse mark accent
-    const timer3 = setTimeout(() => setStep(4), 1300); // Step 4: Tagline reveal
-    const timer4 = setTimeout(() => {
-      setStep(5);
-      setTimeout(onComplete, 400); // Step 5: Smooth exit into content
-    }, 1800);
+    // Check reduced motion upfront
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      onComplete();
+      return;
+    }
+
+    const t1 = setTimeout(() => setStage(2), 1050); // Wordmark & tagline reveal
+    const t2 = setTimeout(() => setStage(3), 1950); // Lift away
+    const t3 = setTimeout(() => onComplete(), 2400); // Complete
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' || e.key === ' ') {
@@ -22,103 +24,110 @@ export default function WelcomeScreen({ onComplete }) {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [onComplete]);
 
   return (
     <AnimatePresence>
-      {step < 5 && (
+      {stage < 3 && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: 'easeInOut' }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F8FAFC] dark:bg-[#090D16] text-[#0F172A] dark:text-[#F8FAFC] select-none"
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#070B14] text-[#F1F5F9] select-none blueprint-grid-canvas"
         >
-          {/* Skip Action */}
+          {/* Skip CTA */}
           <button
             onClick={onComplete}
-            className="absolute top-6 right-6 text-xs font-mono tracking-widest text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors uppercase px-3 py-1.5 rounded border border-slate-200 dark:border-slate-800"
+            className="absolute top-6 right-6 text-xs font-mono tracking-widest text-slate-400 hover:text-white transition-colors uppercase px-3 py-1.5 rounded border border-white/10 hover:border-white/20 bg-white/5 backdrop-blur-md"
           >
-            Skip Intro [Esc]
+            Skip [Esc]
           </button>
 
-          <div className="w-full max-w-md px-8 flex flex-col items-center text-center">
-            {/* Step 1 & 4: Wordmark */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="flex items-center gap-2 mb-3"
-            >
-              <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50" />
-              <span className="font-display font-bold text-xl tracking-tight text-slate-900 dark:text-white">
-                CARDIODETECT
-              </span>
-            </motion.div>
+          {/* Center Cinematic Composition */}
+          <div className="w-full max-w-xl px-6 flex flex-col items-center text-center">
+            
+            {/* Ambient Pulse Glow */}
+            <div className="absolute w-72 h-72 rounded-full bg-[var(--accent-cyan)]/10 blur-3xl pointer-events-none -z-10 animate-pulse" />
 
-            {/* Step 2 & 3: Thin ECG Heartbeat Line */}
-            <div className="w-full h-12 flex items-center justify-center my-4 overflow-hidden relative">
+            {/* Stage 1: Beating lines ECG waveform */}
+            <div className="w-full h-24 flex items-center justify-center relative overflow-hidden mb-6">
               <svg
-                viewBox="0 0 300 48"
-                className="w-full h-12 text-rose-500 stroke-current fill-none"
-                style={{ strokeWidth: 1.75, strokeLinecap: 'round', strokeLinejoin: 'round' }}
+                viewBox="0 0 500 80"
+                className="w-full h-full stroke-current fill-none overflow-visible"
               >
-                {/* Reference Baseline */}
+                {/* Background faint guideline */}
                 <line
                   x1="0"
-                  y1="24"
-                  x2="300"
-                  y2="24"
-                  className="stroke-slate-200 dark:stroke-slate-800"
+                  y1="40"
+                  x2="500"
+                  y2="40"
+                  stroke="rgba(69, 217, 232, 0.15)"
                   strokeWidth="1"
+                  strokeDasharray="4 4"
                 />
 
-                {/* Animated ECG Heartbeat Wave */}
+                {/* Beating ECG waveform line */}
                 <motion.path
-                  d="M 0,24 L 75,24 L 95,24 L 105,16 L 115,32 L 125,24 L 140,24 L 146,8 L 154,42 L 162,18 L 170,26 L 178,24 L 195,24 L 205,20 L 215,24 L 300,24"
+                  d="M 0,40 L 120,40 L 150,40 L 165,28 L 180,52 L 195,40 L 220,40 L 230,10 L 242,70 L 254,22 L 266,46 L 278,40 L 305,40 L 320,32 L 335,40 L 500,40"
+                  stroke="url(#ecgWelcomeGradient)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{
-                    pathLength: step >= 2 ? 1 : 0,
-                    opacity: step >= 2 ? 1 : 0,
-                  }}
-                  transition={{
-                    duration: 0.85,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
                 />
 
-                {/* Step 3: Pulse Accent Marker */}
-                {step >= 3 && (
-                  <motion.circle
-                    cx="150"
-                    cy="24"
-                    r="4"
-                    className="fill-rose-500"
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: [0, 1.4, 1], opacity: 1 }}
-                    transition={{ duration: 0.35 }}
-                  />
-                )}
+                {/* Animated Glowing Pulse Bead */}
+                <motion.circle
+                  cx="236"
+                  cy="40"
+                  r="5"
+                  fill="#45D9E8"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{
+                    scale: [0, 1.8, 1],
+                    opacity: [0, 1, 0.8],
+                  }}
+                  transition={{ delay: 0.65, duration: 0.6 }}
+                  className="filter drop-shadow-[0_0_8px_#45D9E8]"
+                />
+
+                <defs>
+                  <linearGradient id="ecgWelcomeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#45D9E8" stopOpacity="0.2" />
+                    <stop offset="45%" stopColor="#45D9E8" stopOpacity="0.9" />
+                    <stop offset="55%" stopColor="#FF5267" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#48D597" stopOpacity="0.3" />
+                  </linearGradient>
+                </defs>
               </svg>
             </div>
 
-            {/* Step 4: Tagline Reveal */}
-            <motion.p
-              initial={{ opacity: 0, y: 6 }}
-              animate={{
-                opacity: step >= 4 ? 1 : 0,
-                y: step >= 4 ? 0 : 6,
-              }}
-              transition={{ duration: 0.35 }}
-              className="text-xs sm:text-sm font-medium tracking-wide text-slate-500 dark:text-slate-400 font-sans"
+            {/* Stage 2: Resolves into CARDIODETECT Wordmark */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: stage >= 2 ? 1 : 0, y: stage >= 2 ? 0 : 12 }}
+              transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
+              className="space-y-2"
             >
-              Every heartbeat leaves a clue.
-            </motion.p>
+              <div className="flex items-center justify-center gap-2.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-[var(--coral-red)] shadow-[0_0_12px_#FF5267]" />
+                <span className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-white">
+                  CARDIODETECT
+                </span>
+              </div>
+
+              {/* Tagline */}
+              <p className="text-xs sm:text-sm font-medium tracking-wide text-slate-400 font-sans">
+                Every heartbeat leaves a clue.
+              </p>
+            </motion.div>
           </div>
         </motion.div>
       )}

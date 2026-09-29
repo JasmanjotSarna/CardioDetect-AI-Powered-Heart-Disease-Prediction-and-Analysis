@@ -90,6 +90,20 @@ export async function fetchRocCurve() {
 }
 
 /**
+ * Fetch additive dataset statistics for real exploratory analytics from heart.csv
+ */
+export async function fetchDatasetStats() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/dataset-stats`);
+    if (!res.ok) throw new Error(`Dataset stats failed with status: ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('Backend /api/dataset-stats unavailable:', err.message);
+    return null;
+  }
+}
+
+/**
  * Fetch clinical investigation presets
  */
 export async function fetchPresets() {
@@ -101,7 +115,7 @@ export async function fetchPresets() {
     console.warn('Backend /api/presets unavailable, using fallback presets:', err.message);
     return {
       healthy: {
-        name: 'Case Alpha: Healthy Baseline (Athletic)',
+        name: 'Healthy Baseline (Athletic / Normal)',
         data: {
           Age: 28,
           Sex: 'F',
@@ -117,7 +131,7 @@ export async function fetchPresets() {
         }
       },
       moderate: {
-        name: 'Case Beta: Moderate Risk (Elevated Vitals)',
+        name: 'Moderate Risk (Stage 1 HTN / Elevated Vitals)',
         data: {
           Age: 54,
           Sex: 'M',
@@ -133,7 +147,7 @@ export async function fetchPresets() {
         }
       },
       highRisk: {
-        name: 'Case Gamma: Acute Ischemia / High Risk',
+        name: 'High Risk (Clinical Watchlist / Ischemia)',
         data: {
           Age: 64,
           Sex: 'M',

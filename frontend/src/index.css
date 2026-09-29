@@ -7,50 +7,59 @@
 }
 
 /* ==========================================================================
-   CARDIODETECT COLOR SYSTEM
-   Dark mode (Default) & Light mode
+   CARDIODETECT COLOR & DESIGN TOKENS
+   Calm, authoritative medical-tech aesthetic with blueprint grids & glassmorphism
    ========================================================================== */
 
 :root {
-  /* Light Theme */
-  --bg-canvas: #F5F8FC;
+  /* Light Theme (Clinical, clean, high-contrast) */
+  --bg-canvas: #F8FAFD;
   --bg-surface: #FFFFFF;
-  --bg-elevated: #EDF3FA;
+  --bg-surface-glass: rgba(255, 255, 255, 0.88);
+  --bg-elevated: #EEF3FA;
   --bg-subtle: #F1F5F9;
 
-  --text-main: #172338;
-  --text-secondary: #65748B;
-  --text-muted: #94A3B8;
+  --text-main: #0B132B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
 
-  --accent-cyan: #008FA3;
-  --accent-cyan-subtle: rgba(0, 143, 163, 0.08);
+  /* WCAG AA verified accents for light background (4.5:1+ contrast) */
+  --accent-cyan: #007D8F;
+  --accent-cyan-subtle: rgba(0, 125, 143, 0.08);
 
-  --medical-green: #16875A;
-  --medical-green-subtle: rgba(22, 135, 90, 0.08);
+  --medical-green: #0E7B50;
+  --medical-green-subtle: rgba(14, 123, 80, 0.08);
 
-  --coral-red: #D9364D;
-  --coral-red-hover: #B8253A;
-  --coral-red-subtle: rgba(217, 54, 77, 0.08);
+  --coral-red: #D9253E;
+  --coral-red-hover: #B51B30;
+  --coral-red-subtle: rgba(217, 37, 62, 0.08);
 
   --border-subtle: #E2E8F0;
+  --border-glass: rgba(15, 23, 42, 0.08);
   --border-hover: #CBD5E1;
   --border-strong: #94A3B8;
 
-  --card-shadow: 0 1px 3px 0 rgba(23, 35, 56, 0.04), 0 1px 2px -1px rgba(23, 35, 56, 0.02);
-  --card-shadow-hover: 0 10px 25px -5px rgba(23, 35, 56, 0.06), 0 8px 10px -6px rgba(23, 35, 56, 0.04);
+  --blueprint-grid: rgba(15, 23, 42, 0.035);
+  --blueprint-grid-fine: rgba(15, 23, 42, 0.015);
+
+  --card-shadow: 0 1px 3px 0 rgba(11, 19, 43, 0.04), 0 1px 2px -1px rgba(11, 19, 43, 0.02);
+  --card-shadow-hover: 0 12px 28px -5px rgba(11, 19, 43, 0.08), 0 8px 10px -6px rgba(11, 19, 43, 0.04);
+  --card-shadow-glass: 0 8px 32px 0 rgba(11, 19, 43, 0.06);
 }
 
 html.dark {
-  /* Dark Theme (Default) */
-  --bg-canvas: #080D18;
-  --bg-surface: #101827;
-  --bg-elevated: #151F31;
-  --bg-subtle: #1C283F;
+  /* Dark Theme (Default: deep near-black navy canvas with subtle cyan glow) */
+  --bg-canvas: #070B14;
+  --bg-surface: #0E1626;
+  --bg-surface-glass: rgba(14, 22, 38, 0.74);
+  --bg-elevated: #152238;
+  --bg-subtle: #1C2B47;
 
-  --text-main: #F3F6FC;
-  --text-secondary: #9AA9BF;
+  --text-main: #F1F5F9;
+  --text-secondary: #94A3B8;
   --text-muted: #64748B;
 
+  /* Accents */
   --accent-cyan: #45D9E8;
   --accent-cyan-subtle: rgba(69, 217, 232, 0.12);
 
@@ -61,12 +70,17 @@ html.dark {
   --coral-red-hover: #FF7082;
   --coral-red-subtle: rgba(255, 82, 103, 0.12);
 
-  --border-subtle: #1D2A40;
-  --border-hover: #2B3D5B;
-  --border-strong: #3D557C;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(69, 217, 232, 0.14);
+  --border-hover: rgba(69, 217, 232, 0.28);
+  --border-strong: #334B70;
+
+  --blueprint-grid: rgba(69, 217, 232, 0.045);
+  --blueprint-grid-fine: rgba(69, 217, 232, 0.02);
 
   --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
   --card-shadow-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.7), 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+  --card-shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 }
 
 /* ==========================================================================
@@ -95,10 +109,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+::selection {
+  background-color: rgba(69, 217, 232, 0.25);
+  color: var(--text-main);
+}
+
 /* Typography Hierarchy */
 h1, h2, h3, h4, h5, h6, .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   font-weight: 600;
   color: var(--text-main);
 }
@@ -107,10 +126,19 @@ h1, h2, h3, h4, h5, h6, .font-display {
   font-family: var(--font-mono);
 }
 
-/* Container Scales */
+/* Fluid Layout Scales (Fixing "cramped & centered") */
+.site-container-wide {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 3.5vw, 3rem);
+  padding-right: clamp(1rem, 3.5vw, 3rem);
+}
+
 .site-container {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1240px;
   margin-left: auto;
   margin-right: auto;
   padding-left: clamp(1rem, 3.5vw, 2.5rem);
@@ -119,48 +147,81 @@ h1, h2, h3, h4, h5, h6, .font-display {
 
 .site-container-narrow {
   width: 100%;
-  max-width: 860px;
+  max-width: 920px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: clamp(1rem, 3vw, 2rem);
-  padding-right: clamp(1rem, 3vw, 2rem);
+  padding-left: clamp(1rem, 3.5vw, 2rem);
+  padding-right: clamp(1rem, 3.5vw, 2rem);
 }
 
-/* ==========================================================================
-   CARDS & PANELS
-   ========================================================================== */
+/* Blueprint Grid Canvas & Tick Borders */
+.blueprint-grid-canvas {
+  background-size: 40px 40px, 8px 8px;
+  background-image: 
+    linear-gradient(to right, var(--blueprint-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--blueprint-grid) 1px, transparent 1px),
+    linear-gradient(to right, var(--blueprint-grid-fine) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--blueprint-grid-fine) 1px, transparent 1px);
+}
+
+.blueprint-ticks-x {
+  background-image: radial-gradient(var(--border-strong) 1px, transparent 0);
+  background-size: 16px 100%;
+}
+
+.frosted-glass {
+  background-color: var(--bg-surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+}
 
 .product-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--card-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.25s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
 
+.product-card-glass {
+  background-color: var(--bg-surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: 14px;
+  box-shadow: var(--card-shadow-glass);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.product-card-glass:hover,
 .product-card:hover {
   border-color: var(--border-hover);
   box-shadow: var(--card-shadow-hover);
 }
 
-.product-card-elevated {
-  background-color: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+/* Glow utilities */
+.glow-cyan {
+  box-shadow: 0 0 25px -4px var(--accent-cyan-subtle);
 }
 
-/* ==========================================================================
-   BUTTONS
-   ========================================================================== */
+.glow-coral {
+  box-shadow: 0 0 25px -4px var(--coral-red-subtle);
+}
 
+.glow-green {
+  box-shadow: 0 0 25px -4px var(--medical-green-subtle);
+}
+
+/* Buttons */
 .btn-primary {
   background-color: var(--coral-red);
   color: #FFFFFF !important;
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   padding: 10px 22px;
-  border-radius: 8px;
+  border-radius: 9px;
   border: 1px solid transparent;
   display: inline-flex;
   align-items: center;
@@ -174,7 +235,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
 .btn-primary:hover {
   background-color: var(--coral-red-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px var(--coral-red-subtle);
+  box-shadow: 0 6px 20px var(--coral-red-subtle);
 }
 
 .btn-primary:active {
@@ -182,13 +243,15 @@ h1, h2, h3, h4, h5, h6, .font-display {
 }
 
 .btn-secondary {
-  background-color: var(--bg-surface);
+  background-color: var(--bg-surface-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--text-main) !important;
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: 9px;
   border: 1px solid var(--border-subtle);
   display: inline-flex;
   align-items: center;
@@ -209,14 +272,13 @@ h1, h2, h3, h4, h5, h6, .font-display {
   transform: translateY(0);
 }
 
-/* Theme Toggle Button */
 .theme-toggle-btn {
-  background-color: var(--bg-surface);
+  background-color: var(--bg-surface-glass);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -230,20 +292,17 @@ h1, h2, h3, h4, h5, h6, .font-display {
   border-color: var(--border-hover);
 }
 
-/* ==========================================================================
-   FORM CONTROLS
-   ========================================================================== */
-
+/* Form Controls */
 .form-input {
   width: 100%;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: 9px;
   color: var(--text-main);
   padding: 10px 14px;
   font-size: 0.92rem;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.25s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
 }
 
 .form-input:focus {
@@ -255,13 +314,13 @@ h1, h2, h3, h4, h5, h6, .font-display {
   width: 100%;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: 9px;
   color: var(--text-main);
   padding: 10px 14px;
   font-size: 0.92rem;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.25s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .form-select:focus {
@@ -270,39 +329,17 @@ h1, h2, h3, h4, h5, h6, .font-display {
 }
 
 .input-unit-badge {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
   font-weight: 500;
   color: var(--text-muted);
   background-color: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 2px 7px;
+  border-radius: 5px;
 }
 
-/* Segmented Control Pill */
-.segmented-btn {
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 6px;
-  transition: all 0.15s ease;
-  cursor: pointer;
-}
-.segmented-btn-active {
-  background-color: var(--coral-red);
-  color: #FFFFFF;
-  box-shadow: 0 2px 6px var(--coral-red-subtle);
-}
-.segmented-btn-inactive {
-  background-color: transparent;
-  color: var(--text-secondary);
-}
-.segmented-btn-inactive:hover {
-  color: var(--text-main);
-  background-color: var(--bg-elevated);
-}
-
-/* Custom Range Slider */
+/* Range input */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -313,6 +350,7 @@ input[type="range"] {
   border-radius: 4px;
   outline: none;
 }
+
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -325,75 +363,21 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: pointer;
   transition: transform 0.1s ease;
 }
+
 input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
+  transform: scale(1.18);
 }
 
-/* Step Indicator */
-.step-indicator {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--accent-cyan);
-  background-color: var(--accent-cyan-subtle);
-  padding: 2px 8px;
-  border-radius: 4px;
-  display: inline-block;
+/* Keyboard accessibility outline */
+:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
 }
 
-/* Medical Grid Background Pattern */
-.medical-grid-bg {
-  background-size: 24px 24px;
-  background-image: 
-    linear-gradient(to right, rgba(29, 42, 64, 0.15) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(29, 42, 64, 0.15) 1px, transparent 1px);
-}
-html.dark .medical-grid-bg {
-  background-image: 
-    linear-gradient(to right, rgba(69, 217, 232, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(69, 217, 232, 0.05) 1px, transparent 1px);
-}
-
-@keyframes border-beam {
-  0% {
-    offset-distance: 0%;
-  }
-  100% {
-    offset-distance: 100%;
-  }
-}
-
-/* ECG Animations */
-@keyframes ecgSweep {
-  0% {
-    stroke-dashoffset: 1200;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-.ecg-animated-line {
-  stroke-dasharray: 1200;
-  stroke-dashoffset: 1200;
-  animation: ecgSweep 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
-}
-
-@keyframes heartFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-.floating-heart {
-  animation: heartFloat 4s ease-in-out infinite;
-}
-
-/* Scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-canvas);
@@ -404,6 +388,25 @@ html.dark .medical-grid-bg {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .product-card, .product-card-glass {
+    box-shadow: none !important;
+    border: 1px solid #D0D0D0 !important;
+    page-break-inside: avoid;
+  }
 }
 
 /* Reduced Motion */

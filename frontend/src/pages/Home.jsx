@@ -1,291 +1,372 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  Activity,
-  Cpu,
-  Layers,
   ShieldCheck,
-  CheckCircle2,
-  FileText,
-  BarChart3,
+  Activity,
   Sliders,
-  Sparkles,
-  TrendingUp
+  CheckCircle2,
+  FileText
 } from 'lucide-react';
-import HeroHeartVisualizer from '../components/HeroHeartVisualizer';
-import BackgroundBeams from '../components/ui/BackgroundBeams';
-import BentoGrid from '../components/ui/BentoGrid';
-import CardSpotlight from '../components/ui/CardSpotlight';
-import BorderBeam from '../components/ui/BorderBeam';
+import PulseFieldCanvas from '../components/PulseFieldCanvas';
+import LandingPageMiniDemo from '../components/LandingPageMiniDemo';
+import BentoGridCapabilities from '../components/BentoGridCapabilities';
+import FAQAccordion from '../components/FAQAccordion';
+import { fetchMetrics } from '../api';
+import { useCountUp, fadeUpVariant, staggerContainer, pageTransitionVariant } from '../utils/motion';
 
 export default function Home() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1
+  const navigate = useNavigate();
+  const [metrics, setMetrics] = useState(null);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const m = await fetchMetrics();
+        setMetrics(m);
+      } catch {
+        // Fallback
+        setMetrics({ accuracy: 0.8641, roc_auc: 0.9269, precision: 0.8812, recall: 0.8725 });
       }
     }
-  };
+    loadStats();
+  }, []);
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 12 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
-    }
-  };
+  const acc = useCountUp(metrics ? metrics.accuracy * 100 : 86.41, 1000, 2);
+  const auc = useCountUp(metrics ? metrics.roc_auc : 0.9269, 1000, 4);
+  const prec = useCountUp(metrics ? metrics.precision * 100 : 88.12, 1000, 2);
+  const rec = useCountUp(metrics ? metrics.recall * 100 : 87.25, 1000, 2);
 
   return (
-    <div className="bg-[var(--bg-canvas)] text-[var(--text-main)] min-h-screen transition-colors duration-200">
-      
+    <motion.div
+      variants={pageTransitionVariant}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="bg-[var(--bg-canvas)] text-[var(--text-main)] min-h-screen transition-colors duration-200"
+    >
       {/* =========================================================================
-          HERO SECTION (Two-column with Aceternity BackgroundBeams & Interactive Visualizer)
+          HERO SECTION (Split 12-Column Layout: Left Typography / Right Pulse Field)
           ========================================================================= */}
-      <section className="relative pt-12 sm:pt-20 pb-16 sm:pb-24 border-b border-[var(--border-subtle)] overflow-hidden">
-        {/* Aceternity Style Background Beams & Mesh */}
-        <BackgroundBeams />
+      <section className="relative pt-12 sm:pt-20 pb-16 sm:pb-24 border-b border-[var(--border-subtle)] blueprint-grid-canvas overflow-hidden">
+        {/* Ambient Glows */}
+        <div className="absolute top-1/4 -left-20 w-[450px] h-[350px] bg-[var(--accent-cyan)]/6 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-10 right-0 w-[450px] h-[350px] bg-[var(--coral-red)]/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
-        <div className="site-container relative z-10">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center"
-          >
-            {/* Left Column: Typography, Eyebrow, CTAs */}
-            <div className="lg:col-span-7 space-y-6">
-              
-              {/* Eyebrow */}
+        <div className="site-container-wide">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            
+            {/* Left 6 Columns: Editorial Typography & Primary CTA */}
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="lg:col-span-6 space-y-6 max-w-2xl"
+            >
               <motion.div
-                variants={itemVariants}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--coral-red-subtle)] border border-[var(--coral-red)]/20 text-[var(--coral-red)] text-xs font-semibold uppercase tracking-wider"
+                variants={fadeUpVariant}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-surface-glass)] border border-[var(--border-glass)] text-xs font-mono text-[var(--accent-cyan)] backdrop-blur-md shadow-xs"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--coral-red)]" />
-                <span>AI-POWERED CARDIOVASCULAR RESEARCH</span>
+                <span className="w-2 h-2 rounded-full bg-[var(--accent-cyan)] animate-pulse" />
+                <span className="font-semibold uppercase tracking-wider">Clinical Machine Learning</span>
+                <span className="text-[var(--text-muted)]">•</span>
+                <span className="text-[var(--text-secondary)]">k=5 Nearest Neighbors</span>
               </motion.div>
 
-              {/* Headline */}
               <motion.h1
-                variants={itemVariants}
-                className="text-4xl sm:text-6xl font-display font-bold text-[var(--text-main)] tracking-tight leading-[1.08]"
+                variants={fadeUpVariant}
+                className="text-4xl sm:text-6xl xl:text-7xl font-display font-bold text-[var(--text-main)] tracking-tight leading-[1.04]"
               >
                 Every heartbeat <br />
-                <span className="text-[var(--coral-red)]">leaves a clue.</span>
+                <span className="bg-gradient-to-r from-[var(--coral-red)] via-[var(--accent-cyan)] to-[var(--medical-green)] bg-clip-text text-transparent">
+                  leaves a clue.
+                </span>
               </motion.h1>
 
-              {/* Supporting Copy */}
               <motion.p
-                variants={itemVariants}
-                className="text-base sm:text-lg text-[var(--text-secondary)] max-w-xl leading-relaxed"
+                variants={fadeUpVariant}
+                className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed"
               >
-                Explore cardiovascular health indicators through an interactive machine-learning experience. Examine clinical features, understand the K-Nearest Neighbors model, and explore the statistical patterns behind its predictions.
+                An award-level clinical intelligence console. Project 11 standardized physiological biomarkers into an explainable 15-dimensional patient feature space to detect coronary ischemia patterns.
               </motion.p>
 
-              {/* Action Buttons */}
-              <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3 pt-2">
-                <Link to="/investigate" className="btn-primary text-sm py-3 px-6 shadow-sm">
-                  <span>Start an Investigation</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link to="/science" className="btn-secondary text-sm py-3 px-6">
-                  <span>Explore the Science</span>
-                </Link>
+              {/* CTAs */}
+              <motion.div variants={fadeUpVariant} className="flex flex-wrap items-center gap-3.5 pt-2">
+                <button
+                  onClick={() => navigate('/assess')}
+                  className="btn-primary text-sm sm:text-base py-3.5 px-8 shadow-md group cursor-pointer"
+                >
+                  <span>Start assessment</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <a
+                  href="#how-it-works"
+                  className="btn-secondary text-sm sm:text-base py-3.5 px-6 cursor-pointer"
+                >
+                  <span>See how it works</span>
+                </a>
               </motion.div>
 
-              {/* Verified Metrics Metadata Strip */}
+              {/* Trust Badges */}
               <motion.div
-                variants={itemVariants}
-                className="pt-6 border-t border-[var(--border-subtle)] grid grid-cols-3 gap-4 max-w-lg"
+                variants={fadeUpVariant}
+                className="pt-6 border-t border-[var(--border-subtle)] flex items-center gap-6 text-xs font-mono text-[var(--text-muted)]"
               >
-                <div>
-                  <div className="font-mono font-bold text-lg sm:text-xl text-[var(--text-main)]">
-                    86.41%
-                  </div>
-                  <div className="text-[11px] sm:text-xs text-[var(--text-secondary)]">
-                    Test Accuracy
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-[var(--medical-green)]" />
+                  <span>918 UCI Patient Cohort</span>
                 </div>
-                <div>
-                  <div className="font-mono font-bold text-lg sm:text-xl text-[var(--coral-red)]">
-                    0.9269
-                  </div>
-                  <div className="text-[11px] sm:text-xs text-[var(--text-secondary)]">
-                    ROC-AUC Score
-                  </div>
-                </div>
-                <div>
-                  <div className="font-mono font-bold text-lg sm:text-xl text-[var(--accent-cyan)]">
-                    918 Cases
-                  </div>
-                  <div className="text-[11px] sm:text-xs text-[var(--text-secondary)]">
-                    Cohort Dataset
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-[var(--accent-cyan)]" />
+                  <span>100% Explainable K-NN</span>
                 </div>
               </motion.div>
+            </motion.div>
+
+            {/* Right 6 Columns: Pulse Field Visualizer (Replaces Heart) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:col-span-6 w-full"
+            >
+              <PulseFieldCanvas />
+            </motion.div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          LIVE STATS TICKER STRIP (Edge-to-Edge Fluid Metrics)
+          ========================================================================= */}
+      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-8">
+        <div className="site-container-wide">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-2xl sm:text-3xl font-bold text-[var(--text-main)]">{acc}%</span>
+                <span className="w-2 h-2 rounded-full bg-[var(--medical-green)]" />
+              </div>
+              <div className="font-mono text-xs uppercase text-[var(--text-muted)]">Holdout Test Accuracy</div>
+              <p className="text-[11px] text-[var(--text-secondary)]">159 of 184 test records correctly classified</p>
             </div>
 
-            {/* Right Column: Custom Interactive Heart Visualizer with BorderBeam */}
-            <motion.div
-              variants={itemVariants}
-              className="lg:col-span-5 flex justify-center"
-            >
-              <HeroHeartVisualizer />
-            </motion.div>
-          </motion.div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-2xl sm:text-3xl font-bold text-[var(--accent-cyan)]">{auc}</span>
+                <span className="w-2 h-2 rounded-full bg-[var(--accent-cyan)]" />
+              </div>
+              <div className="font-mono text-xs uppercase text-[var(--text-muted)]">ROC-AUC Score</div>
+              <p className="text-[11px] text-[var(--text-secondary)]">High discrimination separating disease vs healthy</p>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-2xl sm:text-3xl font-bold text-[var(--text-main)]">{prec}%</span>
+                <span className="w-2 h-2 rounded-full bg-[var(--medical-green)]" />
+              </div>
+              <div className="font-mono text-xs uppercase text-[var(--text-muted)]">Precision (PPV)</div>
+              <p className="text-[11px] text-[var(--text-secondary)]">88% positive prediction accuracy</p>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-2xl sm:text-3xl font-bold text-[var(--coral-red)]">{rec}%</span>
+                <span className="w-2 h-2 rounded-full bg-[var(--coral-red)]" />
+              </div>
+              <div className="font-mono text-xs uppercase text-[var(--text-muted)]">Clinical Sensitivity</div>
+              <p className="text-[11px] text-[var(--text-secondary)]">Detected 89 of 102 true heart-disease cases</p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* =========================================================================
-          PRODUCT OVERVIEW — 3 CLEAR STAGES (With CardSpotlight)
+          "HOW IT WORKS" STORY SECTION
           ========================================================================= */}
-      <section className="py-16 sm:py-24 border-b border-[var(--border-subtle)]">
-        <div className="site-container">
-          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-            <span className="step-indicator">WORKFLOW ARCHITECTURE</span>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-[var(--text-main)] mt-2">
-              From clinical indicators to statistical evidence.
+      <section id="how-it-works" className="py-20 sm:py-28 border-b border-[var(--border-subtle)] relative">
+        <div className="site-container-wide">
+          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-mono uppercase text-[var(--text-muted)]">
+              <span>The Clinical Protocol</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-display font-bold text-[var(--text-main)] tracking-tight">
+              Three steps to transparent clarity.
             </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-2">
-              Three streamlined phases connecting raw vitals with machine learning decision boundaries.
+            <p className="text-sm sm:text-base text-[var(--text-secondary)]">
+              From raw patient vitals to nearest-neighbor consensus in seconds.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {/* Step 01 */}
-            <CardSpotlight className="space-y-3" spotlightColor="rgba(255, 82, 103, 0.08)">
-              <span className="font-mono font-bold text-[var(--coral-red)] text-sm">
-                01 — Enter clinical indicators
-              </span>
-              <h3 className="font-display font-semibold text-lg text-[var(--text-main)]">
-                Patient Vitals & Stress Testing
-              </h3>
-              <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
-                Provide age, sex, chest pain presentation, resting blood pressure, cholesterol, and post-exercise ECG stress test measurements.
-              </p>
-            </CardSpotlight>
-
-            {/* Step 02 */}
-            <CardSpotlight className="space-y-3" spotlightColor="rgba(69, 217, 232, 0.08)">
-              <span className="font-mono font-bold text-[var(--accent-cyan)] text-sm">
-                02 — Explore the model's analysis
-              </span>
-              <h3 className="font-display font-semibold text-lg text-[var(--text-main)]">
-                K-Nearest Neighbors Inference
-              </h3>
-              <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
-                The scikit-learn pipeline normalizes features with StandardScaler and computes Euclidean distance across the 15-dimensional space to identify the 5 closest clinical profiles.
-              </p>
-            </CardSpotlight>
-
-            {/* Step 03 */}
-            <CardSpotlight className="space-y-3" spotlightColor="rgba(72, 213, 151, 0.08)">
-              <span className="font-mono font-bold text-[var(--medical-green)] text-sm">
-                03 — Review the result & limitations
-              </span>
-              <h3 className="font-display font-semibold text-lg text-[var(--text-main)]">
-                Evidence Synthesis & Findings
-              </h3>
-              <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
-                Inspect predicted risk level, probability estimate, primary contributing biomarkers, and research-use guidelines with clear educational boundaries.
-              </p>
-            </CardSpotlight>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          MAGIC UI & ACETERNITY BENTO GRID FEATURES
-          ========================================================================= */}
-      <section className="py-16 sm:py-24 border-b border-[var(--border-subtle)]">
-        <div className="site-container">
-          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-            <span className="step-indicator">PLATFORM CAPABILITIES</span>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-[var(--text-main)] mt-2">
-              Engineered for Clinical & Educational Rigor
-            </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-2">
-              Explore the key capabilities powering the CardioDetect investigation system.
-            </p>
-          </div>
-
-          <BentoGrid />
-        </div>
-      </section>
-
-      {/* =========================================================================
-          VERIFIED MODEL PERFORMANCE SECTION
-          ========================================================================= */}
-      <section className="py-16 sm:py-24 border-b border-[var(--border-subtle)]">
-        <div className="site-container">
-          <div className="product-card p-8 sm:p-10 bg-[var(--bg-elevated)]/60 relative overflow-hidden">
-            <BorderBeam size={280} duration={12} colorFrom="#48D597" colorTo="#45D9E8" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-              <div className="lg:col-span-8 space-y-4">
-                <span className="step-indicator">AUTHENTIC MODEL BENCHMARK</span>
-                <h2 className="text-2xl sm:text-3xl font-display font-bold text-[var(--text-main)]">
-                  Evaluated on 184 Independent Test Patients
-                </h2>
-                <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed max-w-2xl">
-                  Trained on an 80/20 stratified split of 918 patients across 5 renowned cardiovascular research centers. The model achieves an 86.41% accuracy score and 0.9269 area under the ROC curve.
-                </p>
-
-                <div className="flex flex-wrap gap-4 pt-2 text-xs font-mono">
-                  <div className="flex items-center gap-1.5 text-[var(--text-main)]">
-                    <CheckCircle2 className="w-4 h-4 text-[var(--medical-green)]" />
-                    <span>86.41% Accuracy</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[var(--text-main)]">
-                    <CheckCircle2 className="w-4 h-4 text-[var(--accent-cyan)]" />
-                    <span>0.9269 ROC-AUC</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[var(--text-main)]">
-                    <CheckCircle2 className="w-4 h-4 text-[var(--coral-red)]" />
-                    <span>k=5 Neighbors</span>
+            {/* Step 1 */}
+            <div className="product-card-glass p-7 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-2xl font-bold text-[var(--text-muted)]">01</span>
+                  <div className="w-10 h-10 rounded-xl bg-[var(--accent-cyan-subtle)] text-[var(--accent-cyan)] flex items-center justify-center">
+                    <Sliders className="w-5 h-5" />
                   </div>
                 </div>
+                <h3 className="font-display font-semibold text-xl text-[var(--text-main)]">
+                  Enter 11 Indicators
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+                  Input demographics, resting blood pressure, cholesterol, and Bruce protocol stress ECG markers. Contextual clinical guides explain every normal vs concerning threshold.
+                </p>
               </div>
 
-              <div className="lg:col-span-4 flex lg:justify-end">
-                <Link to="/insights" className="btn-secondary text-sm py-3 px-6 w-full lg:w-auto text-center">
-                  <span>View Model Insights</span>
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Link>
+              {/* Mini visual */}
+              <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-2">
+                <div className="flex justify-between text-[10px] font-mono">
+                  <span className="text-[var(--text-muted)]">BP Range:</span>
+                  <span className="text-[var(--medical-green)]">120/80 mmHg Normal</span>
+                </div>
+                <div className="h-1.5 w-full rounded-full bg-[var(--border-subtle)] overflow-hidden">
+                  <div className="h-full w-2/5 bg-[var(--medical-green)]" />
+                </div>
               </div>
             </div>
+
+            {/* Step 2 */}
+            <div className="product-card-glass p-7 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-2xl font-bold text-[var(--text-muted)]">02</span>
+                  <div className="w-10 h-10 rounded-xl bg-[var(--medical-green-subtle)] text-[var(--medical-green)] flex items-center justify-center">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                </div>
+                <h3 className="font-display font-semibold text-xl text-[var(--text-main)]">
+                  15D Nearest Neighbors
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+                  Continuous features are median-imputed and standardized. The query vector projects into 15-dimensional Euclidean space to isolate the 5 closest matched cohort patients.
+                </p>
+              </div>
+
+              {/* Mini visual */}
+              <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-1.5">
+                <div className="text-[10px] font-mono text-[var(--text-muted)]">Distance matching:</div>
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((d) => (
+                    <div key={d} className="flex-1 h-2 rounded-full bg-[var(--accent-cyan)]/70 animate-pulse" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="product-card-glass p-7 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-2xl font-bold text-[var(--text-muted)]">03</span>
+                  <div className="w-10 h-10 rounded-xl bg-[var(--coral-red-subtle)] text-[var(--coral-red)] flex items-center justify-center">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                </div>
+                <h3 className="font-display font-semibold text-xl text-[var(--text-main)]">
+                  Actionable Report
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+                  Receive a clear verdict, review exactly how the 5 peer neighbors voted, explore what-if lifestyle adjustments, and export a print-ready clinical dossier.
+                </p>
+              </div>
+
+              {/* Mini visual */}
+              <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-between text-[11px] font-mono">
+                <span className="text-[var(--text-main)] font-semibold">Verdict: Low Risk</span>
+                <span className="text-[var(--medical-green)]">✓ 100% Peer Match</span>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
       {/* =========================================================================
-          FINAL CTA & RESEARCH-USE DISCLAIMER
+          INTERACTIVE MINI-DEMO (Live Simulation On Landing Page)
           ========================================================================= */}
-      <section className="py-16 sm:py-24">
+      <section className="py-20 sm:py-28 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/30 relative">
+        <div className="site-container">
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+            <h2 className="text-2xl sm:text-4xl font-display font-bold text-[var(--text-main)]">
+              Experience the Classifier Instantly
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
+              Select an illustrative clinical scenario below and trigger an immediate test inference.
+            </p>
+          </div>
+
+          <LandingPageMiniDemo />
+        </div>
+      </section>
+
+      {/* =========================================================================
+          BENTO GRID OF CAPABILITIES
+          ========================================================================= */}
+      <BentoGridCapabilities />
+
+      {/* =========================================================================
+          TRUST & INSTITUTIONAL ETHICS BAND
+          ========================================================================= */}
+      <section className="py-12 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
+        <div className="site-container-wide flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--accent-cyan)] shrink-0">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="font-display font-semibold text-base text-[var(--text-main)]">
+                Educational Cardiovascular Research Instrument
+              </h4>
+              <p className="text-xs text-[var(--text-secondary)] max-w-2xl">
+                CardioDetect is an exploratory machine learning demonstration. It does not provide medical diagnoses, treatment decisions, or formal clinical prognosis.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to="/about"
+            className="btn-secondary text-xs py-2.5 px-4 shrink-0"
+          >
+            <span>Read Method & Ethics</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          FAQ ACCORDION SECTION
+          ========================================================================= */}
+      <FAQAccordion />
+
+      {/* =========================================================================
+          FINAL PRIMARY CALL TO ACTION
+          ========================================================================= */}
+      <section className="py-20 sm:py-28 relative blueprint-grid-canvas">
         <div className="site-container-narrow text-center space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-display font-bold text-[var(--text-main)]">
-            Ready to explore cardiovascular data?
+          <h2 className="text-3xl sm:text-5xl font-display font-bold text-[var(--text-main)] tracking-tight">
+            Ready to evaluate a cardiovascular case?
           </h2>
-          <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-lg mx-auto">
-            Open the investigation workspace to explore how clinical features guide machine learning predictions.
+          <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-xl mx-auto leading-relaxed">
+            Launch the clinical console, enter the 11 physiological indicators, and inspect your matched patient cohort in real time.
           </p>
           <div className="pt-2">
-            <Link to="/investigate" className="btn-primary text-sm py-3.5 px-8 shadow-sm">
-              <span>Start an Investigation</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="pt-8 text-xs text-[var(--text-muted)] max-w-md mx-auto">
-            Educational and research demonstration platform. Not a certified clinical diagnostic device. Consult a cardiologist for personal medical decisions.
+            <button
+              onClick={() => navigate('/assess')}
+              className="btn-primary text-base py-4 px-10 shadow-xl group cursor-pointer"
+            >
+              <span>Launch Clinical Console</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }

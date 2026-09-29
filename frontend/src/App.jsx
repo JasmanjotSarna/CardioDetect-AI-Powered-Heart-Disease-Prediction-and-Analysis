@@ -1,16 +1,94 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import WelcomeScreen from './components/WelcomeScreen';
+import Footer from './components/Footer';
+import CommandPalette from './components/CommandPalette';
 import Home from './pages/Home';
-import Investigation from './pages/Investigation';
-import Dashboard from './pages/Dashboard';
-import Science from './pages/Science';
-import About from './pages/About';
+
+// Lazy-load secondary pages for optimal code splitting & chunk caching
+const AssessmentPage = lazy(() => import('./pages/AssessmentPage'));
+const ReportPage = lazy(() => import('./pages/ReportPage'));
+const InsightsPage = lazy(() => import('./pages/InsightsPage'));
+const Science = lazy(() => import('./pages/Science'));
+const About = lazy(() => import('./pages/About'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+function RouteLoadingFallback() {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-3">
+      <div className="w-8 h-8 rounded-full border-2 border-[var(--coral-red)] border-t-transparent animate-spin" />
+      <span className="font-mono text-xs text-[var(--text-muted)]">Loading clinical intelligence modules...</span>
+    </div>
+  );
+}
+
+function AnimatedRoutes({ onCaseLogged, sessionCases }) {
+  const location = useLocation();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* / Home (product landing) */}
+        <Route
+          path="/"
+          element={<Home onCaseLogged={onCaseLogged} sessionCases={sessionCases} />}
+        />
+
+        {/* /assess Assessment (clinical console) */}
+        <Route
+          path="/assess"
+          element={<AssessmentPage onCaseLogged={onCaseLogged} />}
+        />
+
+        {/* /report Case report (from latest assessment; restorable from session records) */}
+        <Route
+          path="/report"
+          element={<ReportPage />}
+        />
+
+        {/* /insights Model & dataset insights */}
+        <Route
+          path="/insights"
+          element={<InsightsPage sessionCases={sessionCases} />}
+        />
+
+        {/* /science Inside the Model */}
+        <Route path="/science" element={<Science />} />
+
+        {/* /about Method, dataset, limitations, ethics, disclaimer */}
+        <Route path="/about" element={<About />} />
+
+        {/* Legacy redirects */}
+        <Route path="/investigate" element={<Navigate to="/assess" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/insights" replace />} />
+
+        {/* * 404 page (flatline ECG) */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 export default function App() {
-  const [sessionCases, setSessionCases] = useState([]);
+  const [sessionCases, setSessionCases] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('cardiodetect_session_cases');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+
   const [showWelcome, setShowWelcome] = useState(() => {
     try {
       const alreadyWelcomed = sessionStorage.getItem('cardiodetect_welcome_shown');
@@ -21,15 +99,36 @@ export default function App() {
     }
   });
 
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+      if (e.key === 'Escape' && commandPaletteOpen) {
+        setCommandPaletteOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [commandPaletteOpen]);
+
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
     try {
       sessionStorage.setItem('cardiodetect_welcome_shown', 'true');
-    } catch (e) {}
+    } catch {}
   };
 
   const handleCaseLogged = (newCase) => {
-    setSessionCases((prev) => [newCase, ...prev]);
+    setSessionCases((prev) => {
+      const updated = [newCase, ...prev.filter((c) => c.caseId !== newCase.caseId)];
+      try {
+        sessionStorage.setItem('cardiodetect_session_cases', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   return (
@@ -39,48 +138,27 @@ export default function App() {
       <BrowserRouter>
         <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-main)] flex flex-col font-sans transition-colors duration-200">
           
-          {/* Global Sticky Navigation Bar with Theme Toggle & Status */}
-          <Navbar />
+          {/* Global Sticky Navigation Bar with Theme Toggle, Status & Command Palette Trigger */}
+          <Navbar onOpenCommandPalette={() => setCommandPaletteOpen(true)} />
 
-          {/* Main Page Routes */}
+          {/* Global Command Palette (Ctrl/Cmd+K) */}
+          <CommandPalette
+            isOpen={commandPaletteOpen}
+            onClose={() => setCommandPaletteOpen(false)}
+          />
+
+          {/* Main Animated Page Routes */}
           <main className="flex-1">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route
-                path="/investigate"
-                element={<Investigation onCaseLogged={handleCaseLogged} />}
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AnimatedRoutes
+                onCaseLogged={handleCaseLogged}
+                sessionCases={sessionCases}
               />
-              <Route
-                path="/insights"
-                element={<Dashboard sessionCases={sessionCases} />}
-              />
-              <Route
-                path="/dashboard"
-                element={<Navigate to="/insights" replace />}
-              />
-              <Route path="/science" element={<Science />} />
-              <Route path="/about" element={<About />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            </Suspense>
           </main>
 
-          {/* Global Minimal Footer */}
-          <footer className="no-print border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] py-8 px-4 sm:px-8 mt-auto text-xs text-[var(--text-secondary)] transition-colors duration-200">
-            <div className="site-container flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-4">
-                <span className="font-semibold text-[var(--text-main)]">CardioDetect</span>
-                <span>•</span>
-                <Link to="/investigate" className="hover:text-[var(--text-main)] transition-colors">Investigation</Link>
-                <Link to="/insights" className="hover:text-[var(--text-main)] transition-colors">Model Insights</Link>
-                <Link to="/science" className="hover:text-[var(--text-main)] transition-colors">Science</Link>
-                <Link to="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-              </div>
-
-              <div className="text-center sm:text-right text-[var(--text-muted)]">
-                Educational cardiovascular machine learning platform. Not a medical diagnostic tool.
-              </div>
-            </div>
-          </footer>
+          {/* Institutional Calm Medical Footer with Disclaimer */}
+          <Footer />
         </div>
       </BrowserRouter>
     </ThemeProvider>

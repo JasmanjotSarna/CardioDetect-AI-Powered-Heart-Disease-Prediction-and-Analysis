@@ -1,57 +1,178 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Heart,
-  Cpu,
   ShieldCheck,
   Code,
   User,
   ArrowRight,
-  ExternalLink,
   BookOpen,
-  Terminal,
-  Globe
+  Globe,
+  Database,
+  Scale,
+  AlertTriangle,
+  Layers,
+  FileCheck
 } from 'lucide-react';
+import { pageTransitionVariant } from '../utils/motion';
 
 export default function About() {
+  useEffect(() => {
+    document.title = 'About & Methodology | CardioDetect';
+  }, []);
+
   return (
-    <div className="py-8 sm:py-16 bg-[var(--bg-canvas)] text-[var(--text-main)] min-h-screen transition-colors duration-200">
-      <div className="site-container-narrow space-y-12 sm:space-y-16">
+    <motion.div
+      variants={pageTransitionVariant}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="py-8 sm:py-16 bg-[var(--bg-canvas)] text-[var(--text-main)] min-h-[calc(100vh-4rem)] transition-colors duration-200"
+    >
+      <div className="site-container-wide max-w-5xl space-y-12 sm:space-y-16">
         
         {/* Header */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--coral-red-subtle)] text-[var(--coral-red)] text-xs font-semibold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent-cyan-subtle)] text-[var(--accent-cyan)] text-xs font-semibold uppercase tracking-wider font-mono">
             <Heart className="w-3.5 h-3.5" />
-            <span>Platform Background</span>
+            <span>Methodology & Governance</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-display font-bold text-[var(--text-main)] tracking-tight">
             About CardioDetect
           </h1>
-          <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-            Every heartbeat leaves a clue. CardioDetect is an experimental cardiovascular health research and educational platform exploring machine-learning-assisted classification using clinical indicators.
+          <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed max-w-3xl">
+            CardioDetect is an open educational and cardiovascular research platform exploring machine-learning-assisted classification using clinical biomarkers. Built to demonstrate radical algorithmic interpretability over opaque black boxes.
           </p>
         </div>
 
-        {/* Section 1: What CardioDetect is & Why Built */}
-        <section className="product-card p-6 sm:p-8 space-y-4">
+        {/* Section 1: Plain Language Overview */}
+        <section className="product-card-glass p-6 sm:p-8 space-y-4">
           <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
-            <BookOpen className="w-4 h-4 text-[var(--coral-red)]" />
+            <BookOpen className="w-4 h-4 text-[var(--accent-cyan)]" />
             <h2 className="font-display font-bold text-lg text-[var(--text-main)]">
-              What CardioDetect Is & Why It Was Built
+              How the Machine Learning Model Works
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-[var(--text-main)] leading-relaxed">
-            Cardiovascular diseases remain the leading cause of global mortality. While machine learning offers immense promise for early stratification, algorithmic decisions in healthcare are frequently obscured behind black-box architectures or opaque probability scores.
-          </p>
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
-            CardioDetect was built with a transparent objective: provide full visibility into every stage of the diagnostic machine learning pipeline—from raw resting vitals and median imputation to Euclidean coordinate distances and majority-rule neighbor voting.
-          </p>
+          <div className="space-y-3 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+            <p>
+              Unlike deep neural networks whose internal representations are hidden, CardioDetect utilizes a deterministic, geometry-based algorithm: <strong>K-Nearest Neighbors (k=5)</strong> with scikit-learn.
+            </p>
+            <p>
+              When clinical indicators (age, resting blood pressure, cholesterol, stress ECG markers) are submitted, the pipeline standardizes continuous values using <code>StandardScaler</code> so high-magnitude measurements (such as cholesterol in mg/dL) do not distort small-magnitude measurements (such as ST depression in millimeters). It then calculates the exact straight-line Euclidean distance across 15 coordinates between the input and all 734 training patient records.
+            </p>
+            <p>
+              The 5 closest historical cases in that multidimensional space are identified. Each neighbor casts an equal vote. If 3 or more of these 5 similar patients had confirmed coronary artery disease, the case is classified as elevated risk.
+            </p>
+          </div>
         </section>
 
-        {/* Section 2: Creator Profile */}
-        <section className="product-card p-6 sm:p-8 space-y-5">
+        {/* Section 2: Dataset Provenance & Exact Composition */}
+        <section className="product-card-glass p-6 sm:p-8 space-y-5">
           <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
-            <User className="w-4 h-4 text-[var(--accent-cyan)]" />
+            <Database className="w-4 h-4 text-[var(--medical-green)]" />
+            <h2 className="font-display font-bold text-lg text-[var(--text-main)]">
+              Dataset Origin & Empirical Composition
+            </h2>
+          </div>
+
+          <div className="space-y-3 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+            <p>
+              The training registry comprises <strong>918 patient records</strong> compiled from four landmark clinical cardiology registries:
+            </p>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 font-mono text-xs">
+              <li className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+                <span className="font-bold text-[var(--text-main)] block">1. Cleveland Clinic Foundation</span>
+                <span className="text-[var(--text-muted)]">303 clinical evaluations (Dr. Robert Detrano)</span>
+              </li>
+              <li className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+                <span className="font-bold text-[var(--text-main)] block">2. Hungarian Institute of Cardiology</span>
+                <span className="text-[var(--text-muted)]">294 cases, Budapest (Dr. Andras Janosi)</span>
+              </li>
+              <li className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+                <span className="font-bold text-[var(--text-main)] block">3. University Hospital, Zurich</span>
+                <span className="text-[var(--text-muted)]">123 cases, Switzerland (Dr. William Steinbrunn)</span>
+              </li>
+              <li className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+                <span className="font-bold text-[var(--text-main)] block">4. V.A. Medical Center, Long Beach</span>
+                <span className="text-[var(--text-muted)]">200 cases (Dr. Donald Pfisterer)</span>
+              </li>
+            </ul>
+            <p className="text-xs pt-2">
+              Ground truth diagnosis was confirmed via coronary angiography (&gt;50% diameter narrowing in one or more major coronary arteries).
+            </p>
+          </div>
+        </section>
+
+        {/* Section 3: Limitations & Honest Boundary Constraints */}
+        <section className="product-card-glass p-6 sm:p-8 space-y-4 border-amber-500/30">
+          <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            <h2 className="font-display font-bold text-lg text-[var(--text-main)]">
+              Scientific Limitations & Known Algorithmic Constraints
+            </h2>
+          </div>
+
+          <div className="space-y-3 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-1.5">
+                <span className="font-mono text-xs font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                  <Scale className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Sample Size (n=918)</span>
+                </span>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  While benchmarked across four hospitals, 918 patients is small compared to modern longitudinal registries (e.g. UK Biobank). Findings reflect retrospective clinical settings.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-1.5">
+                <span className="font-mono text-xs font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Discrete 20% Granularity</span>
+                </span>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Because k=5 neighbors vote, probability estimates strictly equal 0%, 20%, 40%, 60%, 80%, or 100%. We intentionally avoid pseudo-continuous calibration curves that claim misleading false precision.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-1.5">
+                <span className="font-mono text-xs font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                  <FileCheck className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Non-Interventional</span>
+                </span>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  This tool has not been subjected to a randomized prospective clinical trial and is not FDA/CE-cleared for patient triage or prescription decision support.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 4: Ethics & Responsible AI */}
+        <section className="product-card-glass p-6 sm:p-8 space-y-4">
+          <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
+            <ShieldCheck className="w-4 h-4 text-[var(--accent-cyan)]" />
+            <h2 className="font-display font-bold text-lg text-[var(--text-main)]">
+              Ethics, Fairness & AI Governance
+            </h2>
+          </div>
+
+          <div className="space-y-3 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+            <p>
+              Historical medical datasets carry demographic imbalances (e.g., male patients represent ~79% of this historical cohort). To mitigate bias:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-xs text-[var(--text-muted)]">
+              <li>Sex is modeled as an orthogonal feature rather than an exclusionary stratification filter.</li>
+              <li>Every inference provides transparent nearest-neighbor evidence, enabling clinicians to audit exact comparison instances.</li>
+              <li>No automated decisions or autonomous medical judgments are permitted by the system architecture.</li>
+            </ul>
+          </div>
+        </section>
+
+        {/* Section 5: Creator Profile */}
+        <section className="product-card-glass p-6 sm:p-8 space-y-5">
+          <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
+            <User className="w-4 h-4 text-[var(--coral-red)]" />
             <h2 className="font-display font-bold text-lg text-[var(--text-main)]">
               Creator & Lead Engineer
             </h2>
@@ -95,70 +216,28 @@ export default function About() {
           </div>
         </section>
 
-        {/* Section 3: Verified Technology Stack */}
-        <section className="product-card p-6 sm:p-8 space-y-5">
-          <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
-            <Terminal className="w-4 h-4 text-purple-400" />
-            <h2 className="font-display font-bold text-lg text-[var(--text-main)]">
-              Verified Technology Stack
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div className="p-3.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-              <span className="font-semibold text-[var(--text-main)] block mb-0.5">Frontend Client</span>
-              <p className="text-[var(--text-secondary)]">
-                React 19, Vite, Tailwind CSS v4, Framer Motion, Recharts, Lucide Icons. Dual-theme design system with anti-flash script.
-              </p>
-            </div>
-            <div className="p-3.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-              <span className="font-semibold text-[var(--text-main)] block mb-0.5">API Server</span>
-              <p className="text-[var(--text-secondary)]">
-                FastAPI, Uvicorn asynchronous server, Pydantic type validation schemas with strict boundary constraints.
-              </p>
-            </div>
-            <div className="p-3.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-              <span className="font-semibold text-[var(--text-main)] block mb-0.5">Machine Learning Engine</span>
-              <p className="text-[var(--text-secondary)]">
-                Python 3.12, Scikit-Learn Pipeline, ColumnTransformer, SimpleImputer, StandardScaler, OneHotEncoder, KNeighborsClassifier.
-              </p>
-            </div>
-            <div className="p-3.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-              <span className="font-semibold text-[var(--text-main)] block mb-0.5">Dataset Source</span>
-              <p className="text-[var(--text-secondary)]">
-                Consolidated UCI Heart Disease Dataset (Cleveland, Hungary, Switzerland, Long Beach V.A.) comprising 918 patient records.
-              </p>
-            </div>
-          </div>
+        {/* Full Institutional Medical Disclaimer */}
+        <section className="p-6 sm:p-8 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-3">
+          <span className="font-mono text-xs uppercase tracking-wider text-[var(--text-secondary)] font-semibold block">
+            Institutional Medical Notice & Disclaimer
+          </span>
+          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+            CardioDetect is strictly an educational cardiovascular research and demonstration platform. It does not provide medical diagnoses, treatment plans, triage guidance, or clinical decision-making. Never alter medical therapy or disregard physician counsel based on this computational model. In emergency circumstances, contact local emergency services immediately.
+          </p>
         </section>
 
-        {/* Section 4: Responsible AI & Disclaimers */}
-        <section className="product-card p-6 sm:p-8 space-y-4 border-amber-500/30">
-          <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
-            <ShieldCheck className="w-4 h-4 text-amber-500" />
-            <h2 className="font-display font-bold text-lg text-[var(--text-main)]">
-              Responsible AI Statement & Research Limitations
-            </h2>
-          </div>
-
-          <div className="space-y-3 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
-            <p>
-              CardioDetect is strictly an educational research platform. Machine learning models trained on retrospective observational data inherit historical biases, confounding clinical practices, and demographic skews.
-            </p>
-            <p>
-              <strong>Not Medical Advice:</strong> No output, probability score, or risk level produced by CardioDetect constitutes a medical diagnosis or treatment plan. Individuals with cardiovascular symptoms must seek immediate consultation with a qualified medical professional.
-            </p>
-          </div>
-        </section>
-
-        {/* Next Steps CTA */}
-        <div className="text-center pt-4">
-          <Link to="/investigate" className="btn-primary text-sm py-3 px-6 shadow-sm">
-            <span>Open Investigation Workspace</span>
+        {/* Primary CTA */}
+        <div className="text-center pt-2">
+          <Link
+            to="/assess"
+            className="btn-primary text-xs py-3 px-6 inline-flex items-center gap-2 cursor-pointer shadow-sm"
+          >
+            <span>Launch Clinical Assessment Console</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
+
       </div>
-    </div>
+    </motion.div>
   );
 }

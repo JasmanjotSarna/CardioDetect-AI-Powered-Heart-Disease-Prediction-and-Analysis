@@ -47,7 +47,7 @@ export default function CardSpotlight({
       onBlur={handleBlur}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 transition-all duration-300 hover:border-[var(--border-hover)] ${className}`}
+      className={`relative overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 transition-all duration-300 hover:border-[var(--border-hover)] ${isFocused ? 'ring-2 ring-[var(--accent-cyan)]' : ''} ${className}`}
       {...props}
     >
       {/* Dynamic Cursor Spotlight */}

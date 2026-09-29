@@ -1,6 +1,6 @@
 import React from 'react';
 import CardSpotlight from './CardSpotlight';
-import { Sliders, Cpu, BarChart3, Layers, FileText, ShieldCheck } from 'lucide-react';
+import { Sliders, Cpu, BarChart3, FileText } from 'lucide-react';
 
 /**
  * BentoGrid - Inspired by Aceternity UI & Magic UI
