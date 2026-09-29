@@ -1,0 +1,417 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ==========================================================================
+   CARDIODETECT COLOR SYSTEM
+   Dark mode (Default) & Light mode
+   ========================================================================== */
+
+:root {
+  /* Light Theme */
+  --bg-canvas: #F5F8FC;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #EDF3FA;
+  --bg-subtle: #F1F5F9;
+
+  --text-main: #172338;
+  --text-secondary: #65748B;
+  --text-muted: #94A3B8;
+
+  --accent-cyan: #008FA3;
+  --accent-cyan-subtle: rgba(0, 143, 163, 0.08);
+
+  --medical-green: #16875A;
+  --medical-green-subtle: rgba(22, 135, 90, 0.08);
+
+  --coral-red: #D9364D;
+  --coral-red-hover: #B8253A;
+  --coral-red-subtle: rgba(217, 54, 77, 0.08);
+
+  --border-subtle: #E2E8F0;
+  --border-hover: #CBD5E1;
+  --border-strong: #94A3B8;
+
+  --card-shadow: 0 1px 3px 0 rgba(23, 35, 56, 0.04), 0 1px 2px -1px rgba(23, 35, 56, 0.02);
+  --card-shadow-hover: 0 10px 25px -5px rgba(23, 35, 56, 0.06), 0 8px 10px -6px rgba(23, 35, 56, 0.04);
+}
+
+html.dark {
+  /* Dark Theme (Default) */
+  --bg-canvas: #080D18;
+  --bg-surface: #101827;
+  --bg-elevated: #151F31;
+  --bg-subtle: #1C283F;
+
+  --text-main: #F3F6FC;
+  --text-secondary: #9AA9BF;
+  --text-muted: #64748B;
+
+  --accent-cyan: #45D9E8;
+  --accent-cyan-subtle: rgba(69, 217, 232, 0.12);
+
+  --medical-green: #48D597;
+  --medical-green-subtle: rgba(72, 213, 151, 0.12);
+
+  --coral-red: #FF5267;
+  --coral-red-hover: #FF7082;
+  --coral-red-subtle: rgba(255, 82, 103, 0.12);
+
+  --border-subtle: #1D2A40;
+  --border-hover: #2B3D5B;
+  --border-strong: #3D557C;
+
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.7), 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+}
+
+/* ==========================================================================
+   RESET & FOUNDATION
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Hierarchy */
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.font-mono-code {
+  font-family: var(--font-mono);
+}
+
+/* Container Scales */
+.site-container {
+  width: 100%;
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 3.5vw, 2.5rem);
+  padding-right: clamp(1rem, 3.5vw, 2.5rem);
+}
+
+.site-container-narrow {
+  width: 100%;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 3vw, 2rem);
+  padding-right: clamp(1rem, 3vw, 2rem);
+}
+
+/* ==========================================================================
+   CARDS & PANELS
+   ========================================================================== */
+
+.product-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.25s ease;
+}
+
+.product-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.product-card-elevated {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+
+.btn-primary {
+  background-color: var(--coral-red);
+  color: #FFFFFF !important;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--coral-red-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--coral-red-subtle);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  color: var(--text-main) !important;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none !important;
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--text-main);
+  background-color: var(--bg-elevated);
+  border-color: var(--border-hover);
+}
+
+/* ==========================================================================
+   FORM CONTROLS
+   ========================================================================== */
+
+.form-input {
+  width: 100%;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-main);
+  padding: 10px 14px;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.25s ease;
+}
+
+.form-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px var(--accent-cyan-subtle);
+}
+
+.form-select {
+  width: 100%;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-main);
+  padding: 10px 14px;
+  font-size: 0.92rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.25s ease;
+}
+
+.form-select:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px var(--accent-cyan-subtle);
+}
+
+.input-unit-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Segmented Control Pill */
+.segmented-btn {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.segmented-btn-active {
+  background-color: var(--coral-red);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px var(--coral-red-subtle);
+}
+.segmented-btn-inactive {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+.segmented-btn-inactive:hover {
+  color: var(--text-main);
+  background-color: var(--bg-elevated);
+}
+
+/* Custom Range Slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--coral-red);
+  border: 2px solid var(--bg-surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Step Indicator */
+.step-indicator {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  background-color: var(--accent-cyan-subtle);
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Medical Grid Background Pattern */
+.medical-grid-bg {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(29, 42, 64, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(29, 42, 64, 0.15) 1px, transparent 1px);
+}
+html.dark .medical-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(69, 217, 232, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(69, 217, 232, 0.05) 1px, transparent 1px);
+}
+
+@keyframes border-beam {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+/* ECG Animations */
+@keyframes ecgSweep {
+  0% {
+    stroke-dashoffset: 1200;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+.ecg-animated-line {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: ecgSweep 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+@keyframes heartFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.floating-heart {
+  animation: heartFloat 4s ease-in-out infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
