@@ -67,10 +67,14 @@ npm run dev
 ```
 Frontend launches at `http://localhost:5173`.
 
-### 3. Production Build Validation
+### 3. Production Build Validation & Automated Verification
 ```bash
 cd frontend
 npm run build
+npx oxlint
+
+# Run end-to-end headless browser verification & update multi-viewport screenshots:
+node scripts/verify_browser.mjs
 ```
 
 ---
