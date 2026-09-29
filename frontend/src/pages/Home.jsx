@@ -26,7 +26,6 @@ export default function Home() {
         const m = await fetchMetrics();
         setMetrics(m);
       } catch {
-        // Fallback
         setMetrics({ accuracy: 0.8641, roc_auc: 0.9269, precision: 0.8812, recall: 0.8725 });
       }
     }
@@ -55,7 +54,7 @@ export default function Home() {
         <div className="absolute bottom-10 right-0 w-[450px] h-[350px] bg-[var(--coral-red)]/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="site-container-wide">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
             
             {/* Left 6 Columns: Editorial Typography & Primary CTA */}
             <motion.div
@@ -79,7 +78,7 @@ export default function Home() {
                 className="text-4xl sm:text-6xl xl:text-7xl font-display font-bold text-[var(--text-main)] tracking-tight leading-[1.04]"
               >
                 Every heartbeat <br />
-                <span className="bg-gradient-to-r from-[var(--coral-red)] via-[var(--accent-cyan)] to-[var(--medical-green)] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--medical-green)] bg-clip-text text-transparent">
                   leaves a clue.
                 </span>
               </motion.h1>
@@ -88,7 +87,7 @@ export default function Home() {
                 variants={fadeUpVariant}
                 className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed"
               >
-                An award-level clinical intelligence console. Project 11 standardized physiological biomarkers into an explainable 15-dimensional patient feature space to detect coronary ischemia patterns.
+                Compare a patient's 11 clinical indicators against 918 real cardiovascular cases to detect coronary ischemia risk—with full visibility into which 5 patients were most similar and how they voted.
               </motion.p>
 
               {/* CTAs */}
@@ -140,63 +139,63 @@ export default function Home() {
       </section>
 
       {/* =========================================================================
-          LIVE STATS TICKER STRIP (Edge-to-Edge Fluid Metrics)
+          LIVE STATS TICKER STRIP (Dedicated Band with Dividers & Padding)
           ========================================================================= */}
-      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-8">
+      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] py-10 sm:py-12">
         <div className="site-container-wide">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border-subtle)]">
+            <div className="p-6 sm:px-8 sm:py-4 space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-2xl sm:text-3xl font-bold text-[var(--text-main)]">{acc}%</span>
-                <span className="w-2 h-2 rounded-full bg-[var(--medical-green)]" />
+                <span className="font-mono text-3xl font-bold text-[var(--text-main)]">{acc}%</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--medical-green)]" />
               </div>
-              <div className="font-mono text-xs uppercase text-[var(--text-muted)]">Holdout Test Accuracy</div>
-              <p className="text-[11px] text-[var(--text-secondary)]">159 of 184 test records correctly classified</p>
+              <div className="font-mono text-xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">Holdout Test Accuracy</div>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">159 of 184 test records correctly classified</p>
             </div>
 
-            <div className="space-y-1">
+            <div className="p-6 sm:px-8 sm:py-4 space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-2xl sm:text-3xl font-bold text-[var(--accent-cyan)]">{auc}</span>
-                <span className="w-2 h-2 rounded-full bg-[var(--accent-cyan)]" />
+                <span className="font-mono text-3xl font-bold text-[var(--accent-cyan)]">{auc}</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent-cyan)]" />
               </div>
-              <div className="font-mono text-xs uppercase text-[var(--text-muted)]">ROC-AUC Score</div>
-              <p className="text-[11px] text-[var(--text-secondary)]">High discrimination separating disease vs healthy</p>
+              <div className="font-mono text-xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">ROC-AUC Area</div>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">High discrimination separating disease vs healthy</p>
             </div>
 
-            <div className="space-y-1">
+            <div className="p-6 sm:px-8 sm:py-4 space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-2xl sm:text-3xl font-bold text-[var(--text-main)]">{prec}%</span>
-                <span className="w-2 h-2 rounded-full bg-[var(--medical-green)]" />
+                <span className="font-mono text-3xl font-bold text-[var(--text-main)]">{prec}%</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--medical-green)]" />
               </div>
-              <div className="font-mono text-xs uppercase text-[var(--text-muted)]">Precision (PPV)</div>
-              <p className="text-[11px] text-[var(--text-secondary)]">88% positive prediction accuracy</p>
+              <div className="font-mono text-xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">Precision (PPV)</div>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">88% positive prediction accuracy</p>
             </div>
 
-            <div className="space-y-1">
+            <div className="p-6 sm:px-8 sm:py-4 space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-2xl sm:text-3xl font-bold text-[var(--coral-red)]">{rec}%</span>
-                <span className="w-2 h-2 rounded-full bg-[var(--coral-red)]" />
+                <span className="font-mono text-3xl font-bold text-[var(--coral-red)]">{rec}%</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--coral-red)]" />
               </div>
-              <div className="font-mono text-xs uppercase text-[var(--text-muted)]">Clinical Sensitivity</div>
-              <p className="text-[11px] text-[var(--text-secondary)]">Detected 89 of 102 true heart-disease cases</p>
+              <div className="font-mono text-xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">Clinical Sensitivity</div>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">Detected 89 of 102 true heart-disease cases</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* =========================================================================
-          "HOW IT WORKS" STORY SECTION
+          "HOW IT WORKS" STORY SECTION (Consistent Left-Aligned Header)
           ========================================================================= */}
-      <section id="how-it-works" className="py-20 sm:py-28 border-b border-[var(--border-subtle)] relative">
-        <div className="site-container-wide">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-mono uppercase text-[var(--text-muted)]">
+      <section id="how-it-works" className="py-16 sm:py-24 lg:py-28 border-b border-[var(--border-subtle)] relative">
+        <div className="site-container-wide space-y-12 sm:space-y-16">
+          <div className="max-w-2xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-mono uppercase text-[var(--accent-cyan)] font-semibold">
               <span>The Clinical Protocol</span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-display font-bold text-[var(--text-main)] tracking-tight">
               Three steps to transparent clarity.
             </h2>
-            <p className="text-sm sm:text-base text-[var(--text-secondary)]">
+            <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
               From raw patient vitals to nearest-neighbor consensus in seconds.
             </p>
           </div>
@@ -204,7 +203,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Step 1 */}
-            <div className="product-card-glass p-7 flex flex-col justify-between space-y-6">
+            <div className="product-card-glass p-7 sm:p-8 flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-2xl font-bold text-[var(--text-muted)]">01</span>
@@ -221,19 +220,19 @@ export default function Home() {
               </div>
 
               {/* Mini visual */}
-              <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-2">
-                <div className="flex justify-between text-[10px] font-mono">
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-2">
+                <div className="flex justify-between text-[11px] font-mono">
                   <span className="text-[var(--text-muted)]">BP Range:</span>
-                  <span className="text-[var(--medical-green)]">120/80 mmHg Normal</span>
+                  <span className="text-[var(--medical-green)] font-semibold">120/80 mmHg Normal</span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-[var(--border-subtle)] overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-[var(--border-subtle)] overflow-hidden">
                   <div className="h-full w-2/5 bg-[var(--medical-green)]" />
                 </div>
               </div>
             </div>
 
             {/* Step 2 */}
-            <div className="product-card-glass p-7 flex flex-col justify-between space-y-6">
+            <div className="product-card-glass p-7 sm:p-8 flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-2xl font-bold text-[var(--text-muted)]">02</span>
@@ -250,18 +249,18 @@ export default function Home() {
               </div>
 
               {/* Mini visual */}
-              <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-1.5">
-                <div className="text-[10px] font-mono text-[var(--text-muted)]">Distance matching:</div>
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-2">
+                <div className="text-[11px] font-mono text-[var(--text-muted)]">Distance matching:</div>
                 <div className="flex items-center gap-1.5">
                   {[1, 2, 3, 4, 5].map((d) => (
-                    <div key={d} className="flex-1 h-2 rounded-full bg-[var(--accent-cyan)]/70 animate-pulse" />
+                    <div key={d} className="flex-1 h-2.5 rounded-full bg-[var(--accent-cyan)]/70 animate-pulse" />
                   ))}
                 </div>
               </div>
             </div>
 
             {/* Step 3 */}
-            <div className="product-card-glass p-7 flex flex-col justify-between space-y-6">
+            <div className="product-card-glass p-7 sm:p-8 flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-2xl font-bold text-[var(--text-muted)]">03</span>
@@ -278,9 +277,9 @@ export default function Home() {
               </div>
 
               {/* Mini visual */}
-              <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-between text-[11px] font-mono">
+              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-between text-xs font-mono">
                 <span className="text-[var(--text-main)] font-semibold">Verdict: Low Risk</span>
-                <span className="text-[var(--medical-green)]">✓ 100% Peer Match</span>
+                <span className="text-[var(--medical-green)] font-bold">✓ 100% Peer Match</span>
               </div>
             </div>
 
@@ -289,16 +288,19 @@ export default function Home() {
       </section>
 
       {/* =========================================================================
-          INTERACTIVE MINI-DEMO (Live Simulation On Landing Page)
+          INTERACTIVE MINI-DEMO (Consistent Left-Aligned Header)
           ========================================================================= */}
-      <section className="py-20 sm:py-28 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/30 relative">
-        <div className="site-container">
-          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-            <h2 className="text-2xl sm:text-4xl font-display font-bold text-[var(--text-main)]">
+      <section className="py-16 sm:py-24 lg:py-28 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/30 relative">
+        <div className="site-container-wide space-y-10">
+          <div className="max-w-2xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs font-mono uppercase text-[var(--accent-cyan)] font-semibold">
+              <span>Interactive Model Verification</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-display font-bold text-[var(--text-main)] tracking-tight">
               Experience the Classifier Instantly
             </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
-              Select an illustrative clinical scenario below and trigger an immediate test inference.
+            <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+              Select an illustrative clinical scenario below and trigger an immediate test inference against the live machine learning pipeline.
             </p>
           </div>
 
@@ -348,7 +350,7 @@ export default function Home() {
       {/* =========================================================================
           FINAL PRIMARY CALL TO ACTION
           ========================================================================= */}
-      <section className="py-20 sm:py-28 relative blueprint-grid-canvas">
+      <section className="py-16 sm:py-24 lg:py-28 relative blueprint-grid-canvas">
         <div className="site-container-narrow text-center space-y-6">
           <h2 className="text-3xl sm:text-5xl font-display font-bold text-[var(--text-main)] tracking-tight">
             Ready to evaluate a cardiovascular case?

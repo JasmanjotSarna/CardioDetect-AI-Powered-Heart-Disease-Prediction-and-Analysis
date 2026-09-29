@@ -137,7 +137,7 @@ export default function LandingPageMiniDemo() {
       {/* Action Strip */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <div className="text-xs font-mono text-[var(--text-muted)]">
-          Payload: 11 standardized UCI features $\rightarrow$ /api/predict
+          Payload: 11 standardized UCI features → /api/predict
         </div>
 
         <button
@@ -192,9 +192,10 @@ export default function LandingPageMiniDemo() {
 
             <button
               onClick={() => navigate('/assess')}
-              className="text-xs font-mono font-semibold underline text-[var(--text-main)] hover:text-[var(--accent-cyan)] self-start sm:self-auto"
+              className="text-xs font-mono font-semibold underline text-[var(--text-main)] hover:text-[var(--accent-cyan)] self-start sm:self-auto cursor-pointer flex items-center gap-1"
             >
-              Analyze in full clinical console $\rightarrow$
+              <span>Analyze in full clinical console</span>
+              <ArrowRight className="w-3.5 h-3.5 inline" />
             </button>
           </div>
         </motion.div>

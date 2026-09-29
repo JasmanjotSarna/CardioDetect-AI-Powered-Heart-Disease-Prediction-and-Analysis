@@ -22,7 +22,40 @@ import {
   Info
 } from 'lucide-react';
 import { predictRisk } from '../api';
-import { useCountUp, pageTransitionVariant, fadeUpVariant } from '../utils/motion';
+import { useCountUp, pageTransitionVariant, fadeUpVariant, EASE_OUT_EXPO } from '../utils/motion';
+
+function getSafeInputs(rep) {
+  if (!rep) return null;
+  if (rep.inputValues && typeof rep.inputValues === 'object') {
+    return {
+      Age: Number(rep.inputValues.Age) || 54,
+      Sex: rep.inputValues.Sex || 'M',
+      ChestPainType: rep.inputValues.ChestPainType || 'ASY',
+      RestingBP: Number(rep.inputValues.RestingBP) || 130,
+      Cholesterol: rep.inputValues.Cholesterol !== undefined ? Number(rep.inputValues.Cholesterol) : 223,
+      FastingBS: rep.inputValues.FastingBS !== undefined ? Number(rep.inputValues.FastingBS) : 0,
+      RestingECG: rep.inputValues.RestingECG || 'Normal',
+      MaxHR: Number(rep.inputValues.MaxHR) || 145,
+      ExerciseAngina: rep.inputValues.ExerciseAngina || 'N',
+      Oldpeak: rep.inputValues.Oldpeak !== undefined ? Number(rep.inputValues.Oldpeak) : 1.0,
+      ST_Slope: rep.inputValues.ST_Slope || 'Flat'
+    };
+  }
+  // Reconstruct from patient_summary if inputValues is missing
+  return {
+    Age: Number(rep.patient_summary?.age) || 54,
+    Sex: rep.patient_summary?.sex === 'Female' ? 'F' : 'M',
+    ChestPainType: rep.patient_summary?.chest_pain || 'ASY',
+    RestingBP: Number(rep.patient_summary?.resting_bp) || 130,
+    Cholesterol: rep.patient_summary?.cholesterol !== undefined ? Number(rep.patient_summary?.cholesterol) : 223,
+    FastingBS: 0,
+    RestingECG: 'Normal',
+    MaxHR: Number(rep.patient_summary?.max_hr) || 145,
+    ExerciseAngina: 'N',
+    Oldpeak: 1.0,
+    ST_Slope: 'Flat'
+  };
+}
 
 export default function ReportPage() {
   const location = useLocation();
@@ -30,7 +63,12 @@ export default function ReportPage() {
 
   // Retrieve report from router state or fallback to sessionStorage
   const [report, setReport] = useState(() => {
-    if (location.state?.report) return location.state.report;
+    if (location.state?.report) {
+      try {
+        sessionStorage.setItem('cardiodetect_latest_report', JSON.stringify(location.state.report));
+      } catch {}
+      return location.state.report;
+    }
     try {
       const stored = sessionStorage.getItem('cardiodetect_latest_report');
       if (stored) return JSON.parse(stored);
@@ -39,16 +77,30 @@ export default function ReportPage() {
   });
 
   const [copied, setCopied] = useState(false);
+  const [loadingSample, setLoadingSample] = useState(false);
+
+  // What-If Simulator state initialized with safe inputs
+  const [whatIfValues, setWhatIfValues] = useState(() => getSafeInputs(report));
+  const [simulatedReport, setSimulatedReport] = useState(() => report || null);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const debounceTimerRef = useRef(null);
+
+  // Sync state if location.state changes
+  useEffect(() => {
+    if (location.state?.report) {
+      setReport(location.state.report);
+      try {
+        sessionStorage.setItem('cardiodetect_latest_report', JSON.stringify(location.state.report));
+      } catch {}
+      const safeInputs = getSafeInputs(location.state.report);
+      setWhatIfValues(safeInputs);
+      setSimulatedReport(location.state.report);
+    }
+  }, [location.state]);
 
   // Unconditional count-up calculation for risk percentage
   const riskPct = report ? (report.risk_percentage ?? (report.prediction === 1 ? 80 : 20)) : 0;
   const animatedPct = useCountUp(riskPct, 900, 0);
-
-  // What-If Simulator state initialized directly from report
-  const [whatIfValues, setWhatIfValues] = useState(() => (report?.inputValues ? { ...report.inputValues } : null));
-  const [simulatedReport, setSimulatedReport] = useState(() => report || null);
-  const [isSimulating, setIsSimulating] = useState(false);
-  const debounceTimerRef = useRef(null);
 
   // Set document title
   useEffect(() => {
@@ -59,6 +111,7 @@ export default function ReportPage() {
 
   // Run debounced simulation on what-if slider changes
   const handleWhatIfChange = (key, value) => {
+    if (!whatIfValues) return;
     const updated = { ...whatIfValues, [key]: value };
     setWhatIfValues(updated);
 
@@ -83,8 +136,9 @@ export default function ReportPage() {
   };
 
   const handleResetSimulator = () => {
-    if (report?.inputValues) {
-      setWhatIfValues({ ...report.inputValues });
+    if (report) {
+      const original = getSafeInputs(report);
+      setWhatIfValues(original);
       setSimulatedReport(report);
     }
   };
@@ -93,27 +147,31 @@ export default function ReportPage() {
     if (!report) return;
     const isHigh = Boolean(report.is_high_risk);
     const votes = Math.round(((report.risk_percentage ?? (report.prediction === 1 ? 80 : 20)) / 100) * 5);
+    const inputs = getSafeInputs(report) || {};
+    const factors = Array.isArray(report.contributing_factors) ? report.contributing_factors : [];
+    const recommendations = Array.isArray(report.recommendations) ? report.recommendations : [];
+
     const summaryText = `CARDIODETECT CLINICAL CASE REPORT
 Case ID: ${report.caseId || 'CD-UNKNOWN'}
-Generated: ${report.timestamp || new Date().toISOString()}
+Generated: ${report.timestamp || 'Current Session'}
 Classification Verdict: ${isHigh ? 'ELEVATED CARDIOVASCULAR RISK' : 'LOW CARDIOVASCULAR RISK'}
 Cohort Consensus: ${votes}/5 nearest training neighbors
-Status: ${report.status_description}
+Status: ${report.status_description || 'Standard assessment completed'}
 
 BIOMARKER SUMMARY:
-- Age: ${report.inputValues?.Age ?? 'N/A'} yrs | Sex: ${report.inputValues?.Sex === 'M' ? 'Male' : 'Female'}
-- Resting BP: ${report.inputValues?.RestingBP ?? 'N/A'} mmHg
-- Serum Cholesterol: ${report.inputValues?.Cholesterol ?? 'N/A'} mg/dL
-- Fasting Blood Sugar: ${report.inputValues?.FastingBS === 1 ? '> 120 mg/dL' : '<= 120 mg/dL'}
-- Max Heart Rate: ${report.inputValues?.MaxHR ?? 'N/A'} bpm
-- ST Depression (Oldpeak): ${report.inputValues?.Oldpeak ?? 'N/A'} mm
-- ST Slope: ${report.inputValues?.ST_Slope ?? 'N/A'}
+- Age: ${inputs.Age ?? 'N/A'} yrs | Sex: ${inputs.Sex === 'M' ? 'Male' : 'Female'}
+- Resting BP: ${inputs.RestingBP ?? 'N/A'} mmHg
+- Serum Cholesterol: ${inputs.Cholesterol ?? 'N/A'} mg/dL
+- Fasting Blood Sugar: ${inputs.FastingBS === 1 ? '> 120 mg/dL' : '<= 120 mg/dL'}
+- Max Heart Rate: ${inputs.MaxHR ?? 'N/A'} bpm
+- ST Depression (Oldpeak): ${inputs.Oldpeak ?? 'N/A'} mm
+- ST Slope: ${inputs.ST_Slope ?? 'N/A'}
 
 CONTRIBUTING FACTORS:
-${report.contributing_factors?.length ? report.contributing_factors.map((f) => `- ${f}`).join('\n') : '- None (All indicators within standard reference ranges)'}
+${factors.length ? factors.map((f) => `- ${f}`).join('\n') : '- None (All indicators within standard reference ranges)'}
 
 RECOMMENDATIONS:
-${report.recommendations?.map((r) => `- ${r}`).join('\n')}
+${recommendations.map((r) => `- ${r}`).join('\n')}
 
 Institutional Medical Notice: For research and educational demonstration only. Not a medical diagnosis.`;
 
@@ -127,6 +185,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
   };
 
   const handleLoadDemoCase = async () => {
+    setLoadingSample(true);
     const demoInputs = {
       Age: 62,
       Sex: 'M',
@@ -158,18 +217,21 @@ Institutional Medical Notice: For research and educational demonstration only. N
         sessionStorage.setItem('cardiodetect_latest_report', JSON.stringify(caseRecord));
       } catch {}
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load sample clinical case:', err);
+    } finally {
+      setLoadingSample(false);
     }
   };
 
-  // If no report found, render refined empty state
+  // If no report found, render designed empty state ("No report yet")
   if (!report) {
     return (
       <motion.div
         variants={pageTransitionVariant}
-        initial="initial"
-        animate="animate"
-        exit="exit"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
         className="py-16 sm:py-24 bg-[var(--bg-canvas)] text-[var(--text-main)] min-h-[calc(100vh-4rem)] flex items-center"
       >
         <div className="site-container-wide max-w-2xl mx-auto text-center space-y-6 px-4">
@@ -179,13 +241,13 @@ Institutional Medical Notice: For research and educational demonstration only. N
 
           <div className="space-y-2">
             <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent-cyan)] font-semibold">
-              No Active Case Dossier
+              No Report Yet
             </span>
             <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight text-[var(--text-main)]">
-              No Clinical Report on File
+              No Active Case Dossier
             </h1>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-lg mx-auto">
-              You haven't executed a patient assessment during this session yet. Complete the clinical assessment console to generate a verifiable classification report with nearest-neighbor evidence.
+              You haven't executed a patient assessment during this session yet. Complete the clinical assessment console to generate a verifiable classification report with nearest-neighbor evidence, or load a sample case to explore the report format.
             </p>
           </div>
 
@@ -195,17 +257,18 @@ Institutional Medical Notice: For research and educational demonstration only. N
               className="btn-primary text-xs py-3 px-6 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
             >
               <Activity className="w-4 h-4" />
-              <span>Launch Clinical Assessment</span>
+              <span>Start Assessment</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
 
             <button
               type="button"
+              disabled={loadingSample}
               onClick={handleLoadDemoCase}
               className="btn-secondary text-xs py-3 px-6 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
             >
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>Load Sample Clinical Case</span>
+              <Sparkles className={`w-4 h-4 text-amber-500 ${loadingSample ? 'animate-spin' : ''}`} />
+              <span>{loadingSample ? 'Running Pipeline...' : 'Load Sample Case'}</span>
             </button>
           </div>
         </div>
@@ -222,14 +285,17 @@ Institutional Medical Notice: For research and educational demonstration only. N
   const simRiskPct = simulatedReport?.risk_percentage ?? (simulatedReport?.prediction === 1 ? 80 : 20);
   const simVotes = Math.round((simRiskPct / 100) * 5);
 
-  const neighbors = report.nearest_neighbors || [];
+  const neighbors = Array.isArray(report.nearest_neighbors) ? report.nearest_neighbors : [];
+  const contributingFactors = Array.isArray(report.contributing_factors) ? report.contributing_factors : [];
+  const recommendations = Array.isArray(report.recommendations) ? report.recommendations : [];
 
   return (
     <motion.div
       variants={pageTransitionVariant}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
       className="py-8 sm:py-14 bg-[var(--bg-canvas)] text-[var(--text-main)] min-h-[calc(100vh-4rem)] transition-colors duration-200"
     >
       <div className="site-container-wide space-y-8 sm:space-y-10">
@@ -340,7 +406,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
                   {isHighRisk ? 'Elevated Cardiovascular Risk' : 'Low Cardiovascular Risk'}
                 </h2>
                 <p className="text-xs sm:text-sm text-[var(--text-secondary)] max-w-2xl leading-relaxed">
-                  {report.status_description}
+                  {report.status_description || (isHighRisk ? 'Elevated likelihood of coronary artery disease detected by k-NN nearest-neighbor consensus.' : 'Biomarkers align with historical healthy cohort instances.')}
                 </p>
               </div>
             </div>
@@ -373,7 +439,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
               </h3>
             </div>
             <div className="text-left sm:text-right font-mono text-xs text-[var(--text-muted)]">
-              Distance Metric: Euclidean ($\mathbb{R}^{15}$)
+              Distance Metric: Euclidean (Normalized 15-D Feature Space)
             </div>
           </div>
 
@@ -416,9 +482,13 @@ Institutional Medical Notice: For research and educational demonstration only. N
                       <span className="font-mono text-xs font-bold block">
                         {hasDisease ? 'Heart Disease (+)' : 'Normal (-)'}
                       </span>
-                      {matchNeighbor && (
+                      {matchNeighbor ? (
                         <span className="text-[10px] font-mono text-[var(--text-secondary)] block">
                           Age {matchNeighbor.age} • {matchNeighbor.sex} • {matchNeighbor.chest_pain}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-mono text-[var(--text-muted)] block">
+                          Training instance
                         </span>
                       )}
                     </div>
@@ -427,7 +497,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
               })}
             </div>
 
-            <div className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-start gap-2.5 text-xs text-[var(--text-muted)] font-mono">
+            <div className="p-3.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-start gap-2.5 text-xs text-[var(--text-muted)] font-mono">
               <Info className="w-4 h-4 text-[var(--accent-cyan)] shrink-0 mt-0.5" />
               <span>
                 <strong>Honest Probability Principle:</strong> Because k=5, model output probabilities are strictly limited to discrete multiples of 20% (0%, 20%, 40%, 60%, 80%, or 100%). We represent the exact integer neighbor consensus rather than presenting an artificially smooth or misleading percentage.
@@ -437,38 +507,48 @@ Institutional Medical Notice: For research and educational demonstration only. N
         </motion.div>
 
         {/* =========================================================================
-            SIMILAR PATIENTS COMPARISON CARDS (GENUINE NEIGHBORS RETURNED BY MODEL)
+            SIMILAR PATIENTS COMPARISON CARDS (GUARDED FOR OLDER RECORDS)
             ========================================================================= */}
-        {neighbors.length > 0 && (
-          <motion.div variants={fadeUpVariant} className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[var(--accent-cyan)]" />
-                <h3 className="font-display font-semibold text-lg text-[var(--text-main)]">
-                  Nearest Neighbor Cohort Comparison
-                </h3>
-              </div>
-              <span className="font-mono text-xs text-[var(--text-muted)]">
-                Ranked by Euclidean Distance in Scaled Feature Space
-              </span>
+        <motion.div variants={fadeUpVariant} className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-[var(--accent-cyan)]" />
+              <h3 className="font-display font-semibold text-lg text-[var(--text-main)]">
+                Nearest Neighbor Cohort Comparison
+              </h3>
             </div>
+            <span className="font-mono text-xs text-[var(--text-muted)]">
+              Ranked by Euclidean Distance in Scaled Feature Space
+            </span>
+          </div>
 
+          {neighbors.length === 0 ? (
+            <div className="product-card-glass p-8 text-center space-y-2 border border-dashed border-[var(--border-subtle)] rounded-2xl">
+              <Users className="w-8 h-8 text-[var(--text-muted)] mx-auto opacity-50 mb-1" />
+              <h4 className="font-semibold text-sm text-[var(--text-main)]">
+                Neighbor data unavailable for this older record
+              </h4>
+              <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
+                This record was generated before Euclidean nearest-neighbor telemetry was enabled. Run a new assessment to inspect live 15D neighbor distance matching.
+              </p>
+            </div>
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {neighbors.map((nb, i) => {
-                const userVals = report.inputValues || {};
+                const userInputs = getSafeInputs(report) || {};
                 return (
                   <div
-                    key={nb.id || i}
+                    key={nb.id ?? i}
                     className="product-card-glass p-5 space-y-4 border hover:border-[var(--border-strong)] transition-all"
                   >
                     {/* Neighbor Header */}
                     <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-                          Rank #{nb.rank || i + 1}
+                          Rank #{nb.rank ?? i + 1}
                         </span>
                         <span className="text-xs font-mono text-[var(--text-muted)]">
-                          Dist: {nb.distance}
+                          Dist: {nb.distance ?? 'N/A'}
                         </span>
                       </div>
                       <span
@@ -488,7 +568,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
                       <div className="flex items-center justify-between">
                         <span className="text-[var(--text-muted)] font-mono">Age:</span>
                         <span className="font-mono font-semibold text-[var(--text-main)]">
-                          {nb.age} yrs <span className="text-[10px] text-[var(--text-muted)]">(User: {userVals.Age})</span>
+                          {nb.age ?? '—'} yrs <span className="text-[10px] text-[var(--text-muted)]">(User: {userInputs.Age})</span>
                         </span>
                       </div>
 
@@ -496,7 +576,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
                       <div className="flex items-center justify-between">
                         <span className="text-[var(--text-muted)] font-mono">Resting BP:</span>
                         <span className="font-mono font-semibold text-[var(--text-main)]">
-                          {nb.resting_bp} mmHg <span className="text-[10px] text-[var(--text-muted)]">(User: {userVals.RestingBP})</span>
+                          {nb.resting_bp ?? '—'} mmHg <span className="text-[10px] text-[var(--text-muted)]">(User: {userInputs.RestingBP})</span>
                         </span>
                       </div>
 
@@ -505,7 +585,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
                         <span className="text-[var(--text-muted)] font-mono">Cholesterol:</span>
                         <span className="font-mono font-semibold text-[var(--text-main)]">
                           {nb.cholesterol === 0 ? 'Not Measured' : `${nb.cholesterol} mg/dL`}{' '}
-                          <span className="text-[10px] text-[var(--text-muted)]">(User: {userVals.Cholesterol})</span>
+                          <span className="text-[10px] text-[var(--text-muted)]">(User: {userInputs.Cholesterol})</span>
                         </span>
                       </div>
 
@@ -513,7 +593,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
                       <div className="flex items-center justify-between">
                         <span className="text-[var(--text-muted)] font-mono">Max HR:</span>
                         <span className="font-mono font-semibold text-[var(--text-main)]">
-                          {nb.max_hr} bpm <span className="text-[10px] text-[var(--text-muted)]">(User: {userVals.MaxHR})</span>
+                          {nb.max_hr ?? '—'} bpm <span className="text-[10px] text-[var(--text-muted)]">(User: {userInputs.MaxHR})</span>
                         </span>
                       </div>
 
@@ -521,7 +601,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
                       <div className="flex items-center justify-between">
                         <span className="text-[var(--text-muted)] font-mono">ST Profile:</span>
                         <span className="font-mono font-semibold text-[var(--text-main)]">
-                          {nb.st_slope} (Oldpeak {nb.oldpeak})
+                          {nb.st_slope ?? '—'} (Oldpeak {nb.oldpeak ?? 0})
                         </span>
                       </div>
                     </div>
@@ -529,8 +609,8 @@ Institutional Medical Notice: For research and educational demonstration only. N
                 );
               })}
             </div>
-          </motion.div>
-        )}
+          )}
+        </motion.div>
 
         {/* =========================================================================
             CONTRIBUTING FACTORS & CLINICAL RECOMMENDATIONS
@@ -545,9 +625,9 @@ Institutional Medical Notice: For research and educational demonstration only. N
               </h3>
             </div>
 
-            {report.contributing_factors && report.contributing_factors.length > 0 ? (
+            {contributingFactors.length > 0 ? (
               <div className="space-y-2.5">
-                {report.contributing_factors.map((factor, i) => (
+                {contributingFactors.map((factor, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, x: -6 }}
@@ -578,15 +658,21 @@ Institutional Medical Notice: For research and educational demonstration only. N
             </div>
 
             <div className="space-y-2.5">
-              {report.recommendations?.map((rec, i) => (
-                <div
-                  key={i}
-                  className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] flex items-start gap-2.5 leading-relaxed"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-cyan)] shrink-0 mt-1.5" />
-                  <span>{rec}</span>
+              {recommendations.length > 0 ? (
+                recommendations.map((rec, i) => (
+                  <div
+                    key={i}
+                    className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] flex items-start gap-2.5 leading-relaxed"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-cyan)] shrink-0 mt-1.5" />
+                    <span>{rec}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)]">
+                  Maintain routine aerobic physical activity and annual preventive physician checkups.
                 </div>
-              ))}
+              )}
             </div>
           </motion.div>
         </div>
@@ -672,14 +758,14 @@ Institutional Medical Notice: For research and educational demonstration only. N
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-[var(--text-main)]">Resting Blood Pressure</span>
-                  <span className="font-mono font-bold text-[var(--accent-cyan)]">{whatIfValues.RestingBP} mmHg</span>
+                  <span className="font-mono font-bold text-[var(--accent-cyan)]">{whatIfValues.RestingBP ?? 130} mmHg</span>
                 </div>
                 <input
                   type="range"
                   min="90"
                   max="190"
                   step="2"
-                  value={whatIfValues.RestingBP}
+                  value={whatIfValues.RestingBP ?? 130}
                   onChange={(e) => handleWhatIfChange('RestingBP', Number(e.target.value))}
                   className="w-full h-1.5 bg-[var(--bg-elevated)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-cyan)]"
                 />
@@ -694,14 +780,14 @@ Institutional Medical Notice: For research and educational demonstration only. N
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-[var(--text-main)]">Serum Cholesterol</span>
-                  <span className="font-mono font-bold text-[var(--accent-cyan)]">{whatIfValues.Cholesterol} mg/dL</span>
+                  <span className="font-mono font-bold text-[var(--accent-cyan)]">{whatIfValues.Cholesterol ?? 223} mg/dL</span>
                 </div>
                 <input
                   type="range"
                   min="120"
                   max="380"
                   step="5"
-                  value={whatIfValues.Cholesterol}
+                  value={whatIfValues.Cholesterol ?? 223}
                   onChange={(e) => handleWhatIfChange('Cholesterol', Number(e.target.value))}
                   className="w-full h-1.5 bg-[var(--bg-elevated)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-cyan)]"
                 />
@@ -716,14 +802,14 @@ Institutional Medical Notice: For research and educational demonstration only. N
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-[var(--text-main)]">Peak Stress Max HR</span>
-                  <span className="font-mono font-bold text-[var(--accent-cyan)]">{whatIfValues.MaxHR} bpm</span>
+                  <span className="font-mono font-bold text-[var(--accent-cyan)]">{whatIfValues.MaxHR ?? 145} bpm</span>
                 </div>
                 <input
                   type="range"
                   min="80"
                   max="200"
                   step="2"
-                  value={whatIfValues.MaxHR}
+                  value={whatIfValues.MaxHR ?? 145}
                   onChange={(e) => handleWhatIfChange('MaxHR', Number(e.target.value))}
                   className="w-full h-1.5 bg-[var(--bg-elevated)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-cyan)]"
                 />
@@ -735,7 +821,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
               </div>
             </div>
 
-            <div className="text-[11px] font-mono text-[var(--text-muted)] bg-[var(--bg-canvas)] p-3 rounded-lg border border-[var(--border-subtle)]">
+            <div className="text-[11px] font-mono text-[var(--text-muted)] bg-[var(--bg-canvas)] p-3.5 rounded-lg border border-[var(--border-subtle)]">
               * Exploratory Sensitivity Notice: Adjusting these sliders recalculates nearest Euclidean neighbors across the 918-patient training registry in real time. This models algorithmic sensitivity to lifestyle modifications and does not guarantee medical risk alteration.
             </div>
           </motion.div>
@@ -744,7 +830,7 @@ Institutional Medical Notice: For research and educational demonstration only. N
         {/* =========================================================================
             INSTITUTIONAL DISCLAIMER & SIGN-OFF
             ========================================================================= */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs text-[var(--text-muted)] space-y-2">
+        <div className="p-5 sm:p-6 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-xs text-[var(--text-muted)] space-y-2">
           <div className="font-mono font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
             Institutional Medical Disclaimer & Audit Protocol
           </div>

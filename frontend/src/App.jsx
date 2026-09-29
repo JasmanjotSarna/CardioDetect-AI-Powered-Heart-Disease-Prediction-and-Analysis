@@ -8,6 +8,8 @@ import Footer from './components/Footer';
 import CommandPalette from './components/CommandPalette';
 import Home from './pages/Home';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 // Lazy-load secondary pages for optimal code splitting & chunk caching
 const AssessmentPage = lazy(() => import('./pages/AssessmentPage'));
 const ReportPage = lazy(() => import('./pages/ReportPage'));
@@ -34,46 +36,81 @@ function AnimatedRoutes({ onCaseLogged, sessionCases }) {
   }, [location.pathname]);
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* / Home (product landing) */}
-        <Route
-          path="/"
-          element={<Home onCaseLogged={onCaseLogged} sessionCases={sessionCases} />}
-        />
+    <ErrorBoundary>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          {/* / Home (product landing) */}
+          <Route
+            path="/"
+            element={<Home onCaseLogged={onCaseLogged} sessionCases={sessionCases} />}
+          />
 
-        {/* /assess Assessment (clinical console) */}
-        <Route
-          path="/assess"
-          element={<AssessmentPage onCaseLogged={onCaseLogged} />}
-        />
+          {/* /assess Assessment (clinical console) */}
+          <Route
+            path="/assess"
+            element={
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <AssessmentPage onCaseLogged={onCaseLogged} />
+              </Suspense>
+            }
+          />
 
-        {/* /report Case report (from latest assessment; restorable from session records) */}
-        <Route
-          path="/report"
-          element={<ReportPage />}
-        />
+          {/* /report Case report (from latest assessment; restorable from session records) */}
+          <Route
+            path="/report"
+            element={
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ReportPage />
+              </Suspense>
+            }
+          />
 
-        {/* /insights Model & dataset insights */}
-        <Route
-          path="/insights"
-          element={<InsightsPage sessionCases={sessionCases} />}
-        />
+          {/* /insights Model & dataset insights */}
+          <Route
+            path="/insights"
+            element={
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <InsightsPage sessionCases={sessionCases} />
+              </Suspense>
+            }
+          />
 
-        {/* /science Inside the Model */}
-        <Route path="/science" element={<Science />} />
+          {/* /science Inside the Model */}
+          <Route
+            path="/science"
+            element={
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <Science />
+              </Suspense>
+            }
+          />
 
-        {/* /about Method, dataset, limitations, ethics, disclaimer */}
-        <Route path="/about" element={<About />} />
+          {/* /about Method, dataset, limitations, ethics, disclaimer */}
+          <Route
+            path="/about"
+            element={
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <About />
+              </Suspense>
+            }
+          />
 
-        {/* Legacy redirects */}
-        <Route path="/investigate" element={<Navigate to="/assess" replace />} />
-        <Route path="/dashboard" element={<Navigate to="/insights" replace />} />
+          {/* Legacy redirects */}
+          <Route path="/investigate" element={<Navigate to="/assess" replace />} />
+          <Route path="/dashboard" element={<Navigate to="/insights" replace />} />
 
-        {/* * 404 page (flatline ECG) */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AnimatePresence>
+          {/* * 404 page (flatline ECG) */}
+          <Route
+            path="*"
+            element={
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <NotFound />
+              </Suspense>
+            }
+          />
+        </Routes>
+      </AnimatePresence>
+    </ErrorBoundary>
   );
 }
 
